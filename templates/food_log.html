@@ -7,69 +7,59 @@
 {% block body %}
 <div class='py-4 mt-auto'>
     <div class='container-fluid px-4'>
-
         <div class='row justify-content-center'>
             <div class='col-xl-12'>
-                
-                    <div class='row'>
-                        <div class='col-md-6 mt-4'>
-
-                            <div class='card bg-secondary mb-3'>
-                                <div class='card-header'>
-                                    <h5>Select food to add to the Food Log</h5>
-                                </div>
-                                <div class='card-body'>
-
-                                    <div class='form-group'>
-                                        <form method='POST'>
-                                            {% csrf_token %}
-                                            <div class='form-group'>
-                                                <div class='row'>
-                                                    <div class='col-8'>
-                                                        <select class='form-select' name='food_consumed' id='food_consumed'>
-                                                            
-                                                            {% for food in foods %}
-                                                                <option value='{{food.food_name}}'>
-                                                                    {{ food.food_name }}
-                                                                </option>
-                                                            {% endfor %}
-                                                            
-                                                        </select>
-                                                    </div>
-                                                    <div class='col-4'>
-                                                        <button type='submit' class='btn btn-primary'>
-                                                            Add Food
-                                                        </button>
-                                                    </div>
+                <div class='row'>
+                    <div class='col-md-6 mt-4'>
+                        <div class='card bg-secondary mb-3'>
+                            <div class='card-header'>
+                                <h5>Select food to add to the Food Log</h5>
+                            </div>
+                            <div class='card-body'>
+                                <div class='form-group'>
+                                    <form method='POST'>
+                                        {% csrf_token %}
+                                        <div class='form-group'>
+                                            <div class='row'>
+                                                <div class='col-8'>
+                                                    <select class='form-select' name='food_consumed' id='food_consumed'>
+                                                        {% for food in foods %}
+                                                            <option value='{{food.food_name}}'>
+                                                                {{ food.food_name }}
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class='col-4'>
+                                                    <button type='submit' class='btn btn-primary'>
+                                                        Add Food
+                                                    </button>
                                                 </div>
                                             </div>
-                                        </form>
-                                    </div>
-
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class='card bg-secondary mb-3'>
-
-                                <div class='card-header'>
-                                    <h5>Food consumed today</h5>
-                                    <h5><strong class='text-primary'>{% now 'D, jS F Y' %}</strong></h5>
-                                </div>
-                                <div class='card-body'>
-
-                                    <table id='foodtable' class='table table-hover'>
-                                        <thead>
-                                            <tr>
-                                                <th scope='col' class='col-md-2'>Food Item</th>
-                                                <th scope='col' class='col-md-2'>Calories</th>
-                                                <th scope='col' class='col-md-2'>Fat (g) in 100g</th>
-                                                <th scope='col' class='col-md-2'>Carbs (g) in 100g</th>
-                                                <th scope='col' class='col-md-2'>Protein (g) in 100g</th>
-                                                <th scope='col' class='col-md-2'></th>
-                                            </tr>
-                                        </thead>
-                                        
-                                        <tbody>
+                        <div class='card bg-secondary mb-3'>
+                            <div class='card-header'>
+                                <h5>Food consumed today</h5>
+                                <h5><strong class='text-primary'>{% now 'D, jS F Y' %}</strong></h5>
+                            </div>
+                            <div class='card-body'>
+                                <table id='foodtable' class='table table-hover'>
+                                    <thead>
+                                        <tr>
+                                            <th scope='col' class='col-md-2'>Food Item</th>
+                                            <th scope='col' class='col-md-2'>Calories</th>
+                                            <th scope='col' class='col-md-2'>Fat (g) in 100g</th>
+                                            <th scope='col' class='col-md-2'>Carbs (g) in 100g</th>
+                                            <th scope='col' class='col-md-2'>Protein (g) in 100g</th>
+                                            <th scope='col' class='col-md-2'></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
                                         {% for food_item in user_food_log %}
                                             <tr>
                                                 <td class='col-md-2'>{{ food_item.food_consumed.food_name }}</td>
@@ -84,72 +74,163 @@
                                                 </td>
                                             </tr>
                                         {% endfor %}
-                                            
-                                            <tr>
-                                                <td id='foodName' class='col-md-2'><b>Total</b></td>
-                                                <td id='totalCalories' class='col-md-2'><b></b></td>
-                                                <td id='totalFat' class='col-md-2'><b></b></td>
-                                                <td id='totalCarbohydrates' class='col-md-2'><b></b></td>
-                                                <td id='totalProtein' class='col-md-2'><b></b></td>
-                                                <td></td>     
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                    
-                                </div>
-                            </div>
-                            
-                        </div>
-                        
-                        <div class='col-md-6 mt-4'>
-
-                            <div class='card bg-secondary mb-3'>
-                                <div class='card-header'>
-                                    <h5>Daily Calorie Goal - <strong class='text-primary'>2,000 calories</strong></h5>
-                                </div>
-                                <div class='card-body justify-content-center'>
-
-                                    <div class='progress' style="height: 40px;">
-                                        <div 
-                                            id='progressBar'
-                                            class='progress-bar progress-bar-striped progress-bar-animated' 
-                                            role='progressbar' 
-                                            aria-valuenow='0' 
-                                            aria-valuemin='0' 
-                                            aria-valuemax='100' 
-                                            style='width: 0%; font-size: 25px;'
-                                        >0%</div>
-                                    </div>
-
-                                </div>
-                            </div>
-
-                            <div class='card bg-secondary mb-3'>
-                                <div class='card-header'>
-                                    <h5>Macronutrients Breakdown</h5>
-                                </div>
-                                
-                                <div class='card-body justify-content-center'>
-                                    <div class='chart-pie pt-4'>
-                                        <canvas id='myPieChart'></canvas>
-                                    </div>
-                                </div>
+                                        <tr>
+                                            <td id='foodName' class='col-md-2'><b>Total</b></td>
+                                            <td id='totalCalories' class='col-md-2'><b></b></td>
+                                            <td id='totalFat' class='col-md-2'><b></b></td>
+                                            <td id='totalCarbohydrates' class='col-md-2'><b></b></td>
+                                            <td id='totalProtein' class='col-md-2'><b></b></td>
+                                            <td></td>     
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-                        
                     </div>
+                    
+                    <div class='col-md-6 mt-4'>
+                        <div class='card bg-secondary mb-3'>
+                            <div class='card-header'>
+                                <h5>Daily Calorie Goal - <strong class='text-primary'>2,000 calories</strong></h5>
+                            </div>
+                            <div class='card-body justify-content-center'>
+                                <div class='progress' style="height: 40px;">
+                                    <div 
+                                        id='progressBar'
+                                        class='progress-bar progress-bar-striped progress-bar-animated' 
+                                        role='progressbar' 
+                                        aria-valuenow='0' 
+                                        aria-valuemin='0' 
+                                        aria-valuemax='100' 
+                                        style='width: 0%; font-size: 25px;'
+                                    >0%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class='card bg-secondary mb-3'>
+                            <div class='card-header'>
+                                <h5>Macronutrients Breakdown</h5>
+                            </div>
+                            <div class='card-body justify-content-center'>
+                                <div class='chart-pie pt-4'>
+                                    <canvas id='myPieChart'></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-
     </div>
 </div>    
 {% endblock %}
 
 {% block script %}
+    {{ block.super }}  {# This keeps the base template's scripts #}
+    
     <!-- Page level plugins -->    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    
     <!-- Page level custom scripts -->
-    <script src="{% static 'js/foodLog.js' %}"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Calculate nutrition totals
+        const calculateTotals = () => {
+            const table = document.getElementById('foodtable');
+            if (!table) return;
+            
+            let calories = 0,
+                fat = 0,
+                carbohydrates = 0,
+                protein = 0;
+
+            for (let i = 1; i < table.rows.length - 1; i++) {
+                calories += parseFloat(table.rows[i].cells[1].innerHTML);
+                fat += parseFloat(table.rows[i].cells[2].innerHTML);
+                carbohydrates += parseFloat(table.rows[i].cells[3].innerHTML);
+                protein += parseFloat(table.rows[i].cells[4].innerHTML);
+            }
+
+            fat = Math.round(fat);
+            carbohydrates = Math.round(carbohydrates);
+            protein = Math.round(protein);
+
+            document.getElementById('totalCalories').innerHTML = '<b>' + calories + '</b>';
+            document.getElementById('totalFat').innerHTML = '<b>' + fat + '</b>';
+            document.getElementById('totalCarbohydrates').innerHTML = '<b>' + carbohydrates + '</b>';
+            document.getElementById('totalProtein').innerHTML = '<b>' + protein + '</b>';
+
+            return { calories, fat, carbohydrates, protein };
+        };
+
+        // Initialize charts and progress bar
+        const initCharts = (totals) => {
+            const { fat, carbohydrates, protein, calories } = totals;
+            let total = fat + carbohydrates + protein;
+
+            let fatPercentage = Math.round((fat / total) * 100) || 0;
+            let carbohydratesPercentage = Math.round((carbohydrates / total) * 100) || 0;
+            let proteinPercentage = Math.round((protein / total) * 100) || 0;
+
+            // Doughnut Chart - Macronutrients breakdown
+            if (document.getElementById('myPieChart')) {
+                Chart.defaults.font.family = 'Poppins, sans-serif';
+                Chart.defaults.color = '#858796';
+
+                const ctxDoughnutChart = document.getElementById('myPieChart');
+                new Chart(ctxDoughnutChart, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [
+                            'Fat ' + fatPercentage + '%',
+                            'Carbs ' + carbohydratesPercentage + '%',
+                            'Protein ' + proteinPercentage + '%',
+                        ],
+                        datasets: [{
+                            data: [fatPercentage, carbohydratesPercentage, proteinPercentage],
+                            backgroundColor: ['#e5a641', '#55b560', '#419ad6'],
+                        }],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        animation: { animateScale: true },
+                        plugins: {
+                            legend: { display: true, position: 'bottom' },
+                            title: {
+                                display: true,
+                                text: 'Macronutrients Breakdown',
+                                font: { size: 20 }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Calorie Goal Progress Bar
+            if (document.getElementById('progressBar')) {
+                let caloriePercentage = Math.min(Math.round((calories / 2000) * 100), 100);
+                const progressBar = document.getElementById('progressBar');
+                
+                // Animate the progress bar
+                let currentWidth = 0;
+                const animateProgress = () => {
+                    if (currentWidth < caloriePercentage) {
+                        currentWidth++;
+                        progressBar.style.width = currentWidth + '%';
+                        progressBar.setAttribute('aria-valuenow', currentWidth);
+                        progressBar.textContent = currentWidth + '%';
+                        requestAnimationFrame(animateProgress);
+                    }
+                };
+                animateProgress();
+            }
+        };
+
+        // Initialize everything
+        const totals = calculateTotals();
+        if (totals) initCharts(totals);
+    });
+    </script>
 {% endblock %}

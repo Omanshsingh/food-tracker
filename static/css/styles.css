@@ -1,3 +1,13 @@
+/* Ensure elements above do not block clicks */
+* {
+    pointer-events: auto !important;
+}
+
+/* Fix for any fullscreen overlay blocking clicks */
+.modal, .offcanvas {
+    z-index: 1050 !important;
+}
+
 html {
     position: relative;
     min-height: 100%;
@@ -8,10 +18,21 @@ body {
     font-family: 'Montserrat', sans-serif !important;
 }
 
+/* Fix footer positioning */
 footer {
     position: absolute;
     left: 0;
     bottom: 0;
     height: 90px;
     width: 100%;
+}
+
+/* 🛠 Fix Click Issues for Buttons */
+.navbar, .btn {
+    z-index: 1000;  /* Ensures buttons are clickable */
+    position: relative;
+}
+/* Change background color of dropdown menu */
+.dropdown-menu {
+    background-color: #221e1e !important;
 }
