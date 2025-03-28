@@ -125,76 +125,6 @@
                 transform: scale(1.2) rotate(30deg);
             }
             
-            /* Streak Counter Styles */
-            .streak-item {
-                margin-left: 0.5rem;
-                padding: 0.25rem 0;
-            }
-
-            .streak-container {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                min-width: 40px;
-            }
-
-            .streak-flame {
-                position: relative;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                width: 24px;
-                height: 24px;
-            }
-
-            .streak-icon {
-                color: #FF5722;
-                font-size: 1.25rem;
-                filter: drop-shadow(0 0 3px rgba(255, 87, 34, 0.7));
-                animation: flamePulse 2s infinite alternate;
-            }
-
-            .streak-count {
-                position: absolute;
-                color: white;
-                font-weight: bold;
-                font-size: 0.65rem;
-                text-shadow: 0 0 2px #000;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-            }
-
-            .streak-days {
-                font-size: 0.6rem;
-                color: var(--dark-color);
-                font-weight: 500;
-                margin-top: -2px;
-                white-space: nowrap;
-            }
-
-            /* Animation for the flame */
-            @keyframes flamePulse {
-                0% { transform: scale(1); opacity: 1; }
-                50% { transform: scale(1.1); opacity: 0.9; }
-                100% { transform: scale(1); opacity: 1; }
-            }
-
-            /* Celebration animation */
-            .streak-celebration {
-                animation: streakCelebrate 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            }
-
-            @keyframes streakCelebrate {
-                0% { transform: scale(1); }
-                25% { transform: scale(1.5) rotate(15deg); }
-                50% { transform: scale(1.2) rotate(-10deg); }
-                75% { transform: scale(1.4) rotate(5deg); }
-                100% { transform: scale(1) rotate(0); }
-            }
-            
             /* Container */
             .container {
                 max-width: 1200px;
@@ -261,10 +191,6 @@
             
             [data-theme="dark"] .dropdown-item:hover {
                 background-color: rgba(67, 97, 238, 0.3);
-            }
-            
-            [data-theme="dark"] .streak-days {
-                color: var(--light-color);
             }
             
             /* Responsive adjustments */
@@ -364,19 +290,6 @@
                         <li class='nav-item d-flex align-items-center'>
                             <button id='darkModeToggle' class='btn' title="Toggle Dark Mode">🌙</button>
                         </li>
-                        
-                        <!-- Streak Counter -->
-                        {% if user.is_authenticated %}
-                        <li class="nav-item d-flex align-items-center mx-2 streak-item">
-                            <div class="streak-container" title="Your current logging streak">
-                                <div class="streak-flame">
-                                    <i class="fas fa-fire streak-icon"></i>
-                                    <div class="streak-count">{{ request.user.streak.current_streak|default:0 }}</div>
-                                </div>
-                                <div class="streak-days">days</div>
-                            </div>
-                        </li>
-                        {% endif %}
                     </ul>
                 </div>
             </div>
@@ -456,20 +369,6 @@
                         link.classList.remove('animate__animated', 'animate__pulse');
                     });
                 });
-
-                // Streak celebration animation
-                const streakIcon = document.querySelector('.streak-icon');
-                if (streakIcon) {
-                    const streakCount = parseInt(document.querySelector('.streak-count').textContent);
-                    
-                    if (streakCount > 0 && (streakCount % 5 === 0 || streakCount === 1)) {
-                        streakIcon.classList.add('streak-celebration');
-                        
-                        setTimeout(() => {
-                            streakIcon.classList.remove('streak-celebration');
-                        }, 1000);
-                    }
-                }
             });
         </script>
         {% endblock %}

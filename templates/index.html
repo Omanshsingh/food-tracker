@@ -6,7 +6,13 @@
 <div class='py-4 mt-auto'>
     <div class='container px-4'>
 
-        <h3>{{ title }}</h3>
+        <!-- Add streak counter at the top -->
+        <div class='d-flex justify-content-between align-items-center mb-4'>
+            <h3>{{ title }}</h3>
+            <div id='streak-counter' class='streak-badge'>
+                <span id='streak-days'>0</span> day streak 🔥
+            </div>
+        </div>
 
         <div class='row justify-content-center'>
 
@@ -97,4 +103,68 @@
 
     </div>
 </div>
+
+<!-- Add this JavaScript at the end of the file -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get or initialize streak data
+    let streakData = JSON.parse(localStorage.getItem('streakData')) || {
+        lastLogged: null,
+        currentStreak: 0
+    };
+
+    // Check if user logged food today
+    const today = new Date().toDateString();
+    const lastLoggedDate = streakData.lastLogged;
+    
+    // Update streak logic
+    if (lastLoggedDate) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        if (lastLoggedDate === today) {
+            // Already logged today - do nothing
+        } else if (lastLoggedDate === yesterday.toDateString()) {
+            // Consecutive day
+            streakData.currentStreak += 1;
+            streakData.lastLogged = today;
+        } else {
+            // Broken streak
+            streakData.currentStreak = 1;
+            streakData.lastLogged = today;
+        }
+    } else {
+        // First time logging
+        streakData.lastLogged = today;
+        streakData.currentStreak = 1;
+    }
+
+    // Save and display
+    localStorage.setItem('streakData', JSON.stringify(streakData));
+    document.getElementById('streak-days').textContent = streakData.currentStreak;
+    
+    // Visual feedback
+    const streakCounter = document.getElementById('streak-counter');
+    if (streakData.currentStreak > 3) {
+        streakCounter.classList.add('streak-hot');
+    }
+});
+</script>
+
+<style>
+/* Add streak styling */
+.streak-badge {
+    background: #ff6b6b;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+.streak-hot {
+    background: linear-gradient(45deg, #ff9a3c, #ff6b6b);
+    box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
+    transform: scale(1.05);
+}
+</style>
 {% endblock %}
