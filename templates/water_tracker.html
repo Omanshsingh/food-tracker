@@ -1,72 +1,75 @@
-<!-- In your dashboard.html -->
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Dashboard | Smart Scan{% endblock %}
+{% block title %}Water Tracker | Smart Scan{% endblock %}
 
 {% block body %}
 <div class="container py-4">
-    <!-- Water Tracker Section -->
-    <div class="card mb-4">
+    <div class="card shadow mb-4">
         <div class="card-header bg-primary text-white">
             <h5 class="mb-0">
-                <i class="fas fa-tint me-2"></i>Water Tracker
+                <i class="fas fa-tint me-2"></i>Today's Water Intake
                 <span class="float-end">{{ today|date:"F j, Y" }}</span>
             </h5>
         </div>
+        
         <div class="card-body">
+            <!-- Status Display -->
+            <div class="text-center mb-4">
+                <h3 class="{{ status_class }} mb-2">
+                    <i class="fas 
+                    {% if status == "Not started" %}fa-times
+                    {% elif status == "Low hydration" %}fa-exclamation
+                    {% elif status == "Good progress" %}fa-spinner
+                    {% elif status == "Goal achieved!" %}fa-check
+                    {% else %}fa-trophy{% endif %} 
+                    me-2"></i>{{ status }}
+                </h3>
+                <p class="text-muted">
+                    {% if water_intake.glasses < water_goal.daily_goal %}
+                        {{ remaining }} more glasses to reach your goal!
+                    {% else %}
+                        You've met your daily goal!
+                    {% endif %}
+                </p>
+            </div>
+            
             <!-- Progress Bar -->
-            <div class="progress mb-3" style="height: 30px;">
-                <div class="progress-bar progress-bar-striped bg-info" 
+            <div class="progress mb-4" style="height: 30px;">
+                <div class="progress-bar progress-bar-striped {{ status_class }}" 
                      role="progressbar" 
-                     style="width: {{ water_progress }}%"
-                     id="water-progress-bar">
+                     style="width: {{ progress }}%"
+                     aria-valuenow="{{ water_intake.glasses }}"
+                     aria-valuemin="0"
+                     aria-valuemax="{{ water_goal.daily_goal }}">
                     {{ water_intake.glasses }}/{{ water_goal.daily_goal }} glasses
                 </div>
             </div>
             
             <!-- Controls -->
-            <div class="text-center">
-                <button id="remove-glass" class="btn btn-danger btn-sm">
-                    <i class="fas fa-minus"></i> Remove
-                </button>
-                <span class="mx-3 fs-4" id="glass-count">{{ water_intake.glasses }}</span>
-                <button id="add-glass" class="btn btn-success btn-sm">
-                    <i class="fas fa-plus"></i> Add
-                </button>
-            </div>
+            <form method="POST" action="{% url 'water_tracker' %}">
+                {% csrf_token %}
+                <div class="text-center">
+                    <button type="submit" name="action" value="remove" 
+                            class="btn btn-danger btn-sm" 
+                            {% if water_intake.glasses == 0 %}disabled{% endif %}>
+                        <i class="fas fa-minus"></i> Remove
+                    </button>
+                    <span class="mx-3 fs-4">{{ water_intake.glasses }}</span>
+                    <button type="submit" name="action" value="add" 
+                            class="btn btn-success btn-sm">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="card-footer bg-light">
+            <small class="text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Goal: {{ water_goal.daily_goal }} glasses per day
+            </small>
         </div>
     </div>
-{% endblock %}
-
-{% block script %}
-{{ block.super }}
-<script>
-// Water Tracker AJAX
-document.addEventListener('DOMContentLoaded', function() {
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    
-    function updateWater(action) {
-        fetch("{% url 'log_water' %}", {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRFToken': csrfToken,
-            },
-            body: `action=${action}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('glass-count').textContent = data.glasses;
-            const progressBar = document.getElementById('water-progress-bar');
-            progressBar.style.width = `${data.progress}%`;
-            progressBar.textContent = `${data.glasses}/${data.goal} glasses`;
-        })
-        .catch(error => console.error('Error:', error));
-    }
-
-    document.getElementById('add-glass').addEventListener('click', () => updateWater('add'));
-    document.getElementById('remove-glass').addEventListener('click', () => updateWater('remove'));
-});
-</script>
+</div>
 {% endblock %}
