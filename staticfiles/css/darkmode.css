@@ -1,0 +1,49 @@
+:root {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --navbar-bg: #007bff;
+    --navbar-text: #ffffff;
+}
+
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --text-color: #ffffff;
+    --navbar-bg: #333333;
+    --navbar-text: #000005ea;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.navbar {
+    background-color: var(--navbar-bg) !important;
+}
+
+.navbar a {
+    color: var(--navbar-text) !important;
+}
+
+.modal-content {
+    background-color: #2d2d2d; /* Dark background */
+    color: #ffffff !important; /* White text */
+}
+
+.modal-body {
+    color: #ffffff !important;
+}
+
+.badge {
+    color: #ffffff !important;
+}
+
+/* Ensure text in white boxes is blue */
+.white-box, .white-box * {
+    color: #007bff !important; /* Force blue text */
+}
+
+/* If .white-box is a modal, update modal styles */
+.modal-content .white-box, .modal-content .white-box * {
+    color: #007bff !important;
+}
