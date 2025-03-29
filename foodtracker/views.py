@@ -4,106 +4,190 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils import timezone
 from datetime import datetime, timedelta
+import csv
 
-from .models import User, Food, FoodCategory, FoodLog, Image, Weight, FavoriteFood, Streak
-from .forms import FoodForm, ImageForm
+from .models import User, Food, FoodCategory, FoodLog, Image, Weight, FavoriteFood, WaterIntake, WaterGoal
+from .forms import FoodForm, ImageForm, WaterIntakeForm, WaterGoalForm
 
-# Main Streak View (Combined Dashboard)
-@login_required
-def streak_view(request):
-    """Display the complete streak dashboard with history and achievements"""
-    streak, created = Streak.objects.get_or_create(user=request.user)
-    
-    # Dashboard Data
-    next_milestone = ((streak.current_streak // 5) + 1) * 5
-    progress = (streak.current_streak % 5) * 20 if streak.current_streak > 0 else 0
-    recent_logs = FoodLog.objects.filter(user=request.user).order_by('-consumed_at')[:5]
-    
-    # History Data - group logs by week
-    weekly_logs = {}
-    for log in FoodLog.objects.filter(user=request.user).order_by('-consumed_at'):
-        week = log.consumed_at.isocalendar()[1]  # Get ISO week number
-        weekly_logs.setdefault(week, []).append(log)
-    
-    # Achievements Data
-    milestones = {
-        '5_days': streak.longest_streak >= 5,
-        '10_days': streak.longest_streak >= 10,
-        '30_days': streak.longest_streak >= 30,
-        '100_days': streak.longest_streak >= 100,
-    }
-    
-    context = {
-        'current_streak': streak.current_streak,
-        'longest_streak': streak.longest_streak,
-        'last_active': streak.last_activity_date,
-        'next_milestone': next_milestone,
-        'progress': progress,
-        'recent_logs': recent_logs,
-        'weekly_logs': weekly_logs,
-        'milestones': milestones,
-        'categories': FoodCategory.objects.all()
-    }
-    return render(request, 'streaks/streak.html', context)
-
-# Updated Existing Views with Streak Integration
-@login_required
-def dashboard(request):
-    """Main dashboard view with streak display"""
-    streak, created = Streak.objects.get_or_create(user=request.user)
-    context = {
-        'food_logs': FoodLog.objects.filter(user=request.user).order_by('-consumed_at'),
-        'streak': streak.current_streak,
-        'favorite_foods': FavoriteFood.objects.filter(user=request.user),
-        'categories': FoodCategory.objects.all()
-    }
-    return render(request, 'dashboard.html', context)
+# ======================
+# WATER TRACKING VIEWS
+# ======================
 
 @login_required
-def food_log_view(request):
-    """Handle food logging with streak updates"""
-    if request.method == 'POST':
-        food_id = request.POST.get('food_consumed')
-        if food_id:
-            try:
-                food = Food.objects.get(id=food_id)
-                FoodLog.objects.create(
-                    user=request.user,
-                    food_consumed=food
-                )
-                
-                # Update streak
-                streak, created = Streak.objects.get_or_create(user=request.user)
-                current_streak = streak.update_streak()
-                
-                # Celebration for milestones
-                if current_streak % 5 == 0:
-                    messages.success(request, f"🔥 Amazing! {current_streak}-day streak!")
-                    
-                return redirect('food_log')
-                
-            except Food.DoesNotExist:
-                messages.error(request, "Selected food not found")
+def water_tracker_view(request):
+    """Main water tracking dashboard"""
+    today = timezone.now().date()
+    
+    # Get or create today's water intake
+    water_intake, created = WaterIntake.objects.get_or_create(
+        user=request.user,
+        date=today,
+        defaults={'glasses': 0}
+    )
+    
+    # Get water goal (created via signal)
+    water_goal = request.user.water_goal
+    
+    # Calculate progress percentage
+    progress = min(100, (water_intake.glasses / water_goal.daily_goal) * 100) if water_goal.daily_goal else 0
     
     context = {
         'categories': FoodCategory.objects.all(),
-        'foods': Food.objects.all(),
-        'user_food_log': FoodLog.objects.filter(user=request.user).order_by('-consumed_at')
+        'water_intake': water_intake,
+        'water_goal': water_goal,
+        'progress': progress,
+        'today': today,
+        'weekly_data': get_weekly_water_data(request.user),
     }
-    return render(request, 'food_log.html', context)
+    return render(request, 'water_tracker.html', context)
 
-# Authentication Views
+@login_required
+def log_water(request):
+    """Log water intake via AJAX or form submission"""
+    today = timezone.now().date()
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        water_intake, created = WaterIntake.objects.get_or_create(
+            user=request.user,
+            date=today,
+            defaults={'glasses': 0}
+        )
+        
+        if action == 'add':
+            water_intake.glasses += 1
+        elif action == 'remove' and water_intake.glasses > 0:
+            water_intake.glasses -= 1
+        
+        water_intake.save()
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'glasses': water_intake.glasses,
+                'progress': min(100, (water_intake.glasses / request.user.water_goal.daily_goal) * 100)
+            })
+    
+    return redirect('water_tracker')
+
+@login_required
+def water_settings_view(request):
+    """Update water goal and reminder settings"""
+    water_goal = request.user.water_goal
+    
+    if request.method == 'POST':
+        form = WaterGoalForm(request.POST, instance=water_goal)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Water settings updated successfully!')
+            return redirect('water_settings')
+    else:
+        form = WaterGoalForm(instance=water_goal)
+    
+    context = {
+        'categories': FoodCategory.objects.all(),
+        'form': form,
+    }
+    return render(request, 'water_settings.html', context)
+
+@login_required
+def water_history_view(request):
+    """View historical water intake data"""
+    water_intakes = WaterIntake.objects.filter(user=request.user).order_by('-date')
+    
+    # Date filtering
+    date_from = request.GET.get('from')
+    date_to = request.GET.get('to')
+    
+    if date_from:
+        water_intakes = water_intakes.filter(date__gte=date_from)
+    if date_to:
+        water_intakes = water_intakes.filter(date__lte=date_to)
+    
+    # Pagination
+    paginator = Paginator(water_intakes, 10)
+    page = request.GET.get('page')
+    
+    try:
+        water_intakes = paginator.page(page)
+    except PageNotAnInteger:
+        water_intakes = paginator.page(1)
+    except EmptyPage:
+        water_intakes = paginator.page(paginator.num_pages)
+    
+    context = {
+        'categories': FoodCategory.objects.all(),
+        'water_intakes': water_intakes,
+    }
+    return render(request, 'water_history.html', context)
+
+@login_required
+def export_water_data(request):
+    """Export water data to CSV"""
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="water_intake_history.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(['Date', 'Glasses Consumed', 'Daily Goal', 'Percentage Met'])
+    
+    water_intakes = WaterIntake.objects.filter(user=request.user).order_by('-date')
+    water_goal = request.user.water_goal.daily_goal
+    
+    for intake in water_intakes:
+        percentage = (intake.glasses / water_goal) * 100 if water_goal else 0
+        writer.writerow([
+            intake.date.strftime('%Y-%m-%d'),
+            intake.glasses,
+            water_goal,
+            f"{min(100, percentage):.1f}%"
+        ])
+    
+    return response
+
+def get_weekly_water_data(user):
+    """Get weekly water intake data for charts"""
+    today = timezone.now().date()
+    week_ago = today - timedelta(days=6)
+    
+    water_intakes = WaterIntake.objects.filter(
+        user=user,
+        date__range=[week_ago, today]
+    ).order_by('date')
+    
+    # Create full week data even if some days are missing
+    data = []
+    goal = user.water_goal.daily_goal
+    
+    for i in range(7):
+        current_date = week_ago + timedelta(days=i)
+        intake = water_intakes.filter(date=current_date).first()
+        glasses = intake.glasses if intake else 0
+        met_goal = glasses >= goal if goal else False
+        
+        data.append({
+            'date': current_date,
+            'glasses': glasses,
+            'goal': goal,
+            'met_goal': met_goal,
+            'percentage': min(100, (glasses / goal * 100)) if goal else 0,
+        })
+    
+    return data
+
+# ======================
+# AUTHENTICATION VIEWS
+# ======================
+
 def index(request):
     """Home page view"""
     return food_list_view(request)
 
 def register(request):
-    """User registration with automatic streak creation"""
+    """User registration"""
     if request.method == 'POST':
         username = request.POST['username']
         email = request.POST['email']
@@ -118,7 +202,6 @@ def register(request):
 
         try:
             user = User.objects.create_user(username, email, password)
-            Streak.objects.create(user=user)  # Create streak for new user
             login(request, user)
             return HttpResponseRedirect(reverse('index'))
         except IntegrityError:
@@ -156,7 +239,43 @@ def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse('index'))
 
-# Food Management Views
+# ======================
+# FOOD MANAGEMENT VIEWS
+# ======================
+
+@login_required
+def dashboard(request):
+    """Main dashboard view"""
+    context = {
+        'food_logs': FoodLog.objects.filter(user=request.user).order_by('-consumed_at'),
+        'favorite_foods': FavoriteFood.objects.filter(user=request.user),
+        'categories': FoodCategory.objects.all()
+    }
+    return render(request, 'dashboard.html', context)
+
+@login_required
+def food_log_view(request):
+    """Handle food logging"""
+    if request.method == 'POST':
+        food_id = request.POST.get('food_consumed')
+        if food_id:
+            try:
+                food = Food.objects.get(id=food_id)
+                FoodLog.objects.create(
+                    user=request.user,
+                    food_consumed=food
+                )
+                return redirect('food_log')
+            except Food.DoesNotExist:
+                messages.error(request, "Selected food not found")
+    
+    context = {
+        'categories': FoodCategory.objects.all(),
+        'foods': Food.objects.all(),
+        'user_food_log': FoodLog.objects.filter(user=request.user).order_by('-consumed_at')
+    }
+    return render(request, 'food_log.html', context)
+
 def food_list_view(request):
     """List all available foods"""
     foods = Food.objects.all()
@@ -235,7 +354,10 @@ def food_log_delete(request, food_id):
         'categories': FoodCategory.objects.all()
     })
 
-# Weight Tracking Views
+# ======================
+# WEIGHT TRACKING VIEWS
+# ======================
+
 @login_required
 def weight_log_view(request):
     """Log and view weight entries"""
@@ -267,7 +389,10 @@ def weight_log_delete(request, weight_id):
         'categories': FoodCategory.objects.all()
     })
 
-# Category Views
+# ======================
+# CATEGORY VIEWS
+# ======================
+
 def categories_view(request):
     """List all food categories"""
     return render(request, 'categories.html', {
@@ -302,7 +427,10 @@ def category_details_view(request, category_name):
     }
     return render(request, 'food_category.html', context)
 
-# Favorite Foods Views
+# ======================
+# FAVORITE FOODS VIEWS
+# ======================
+
 @login_required
 def add_favorite_food(request):
     """Add a food to favorites"""
@@ -330,10 +458,6 @@ def quick_add_favorite(request, food_id):
                 food_consumed=food,
                 consumed_at=timezone.now()
             )
-            # Update streak
-            streak, created = Streak.objects.get_or_create(user=request.user)
-            streak.update_streak()
-            
     except FavoriteFood.DoesNotExist:
         messages.error(request, "Favorite food not found")
     

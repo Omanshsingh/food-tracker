@@ -3,6 +3,7 @@ from django.db import models
 from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class User(AbstractUser):
     def __str__(self):
@@ -43,7 +44,7 @@ class Image(models.Model):
         return f'{self.image}'
 
 class Streak(models.Model):
-    user = models.OneToOneField('User', on_delete=models.CASCADE, related_name='streak')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='streak')
     current_streak = models.PositiveIntegerField(default=0)
     longest_streak = models.PositiveIntegerField(default=0)
     last_activity_date = models.DateField(default=timezone.now)
@@ -82,7 +83,6 @@ class FoodLog(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        # Update streak when food is logged
         if hasattr(self.user, 'streak'):
             self.user.streak.update_streak()
 
@@ -109,14 +109,59 @@ class FavoriteFood(models.Model):
     def __str__(self):
         return f'{self.user.username} - {self.food.food_name}'
 
+class WaterIntake(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='water_intakes')
+    date = models.DateField(default=timezone.now)
+    glasses = models.PositiveIntegerField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(50)]
+    )
+    
+    class Meta:
+        verbose_name = 'Water Intake'
+        verbose_name_plural = 'Water Intakes'
+        unique_together = ('user', 'date')
+        ordering = ['-date']
+
+    def __str__(self):
+        return f'{self.user.username} - {self.glasses} glasses on {self.date}'
+
+class WaterGoal(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='water_goal'
+    )
+    daily_goal = models.PositiveIntegerField(
+        default=8,
+        validators=[MinValueValidator(1), MaxValueValidator(20)]
+    )
+    reminder_enabled = models.BooleanField(default=False)
+    reminder_interval = models.PositiveIntegerField(
+        default=60,  # minutes
+        validators=[MinValueValidator(30), MaxValueValidator(240)]
+    )
+    last_reminder_time = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Water Goal'
+        verbose_name_plural = 'Water Goals'
+
+    def __str__(self):
+        return f'{self.user.username} - {self.daily_goal} glasses daily'
+
+# Signals
 @receiver(post_save, sender=User)
 def create_user_streak(sender, instance, created, **kwargs):
     if created:
         Streak.objects.create(user=instance)
 
-# Migration for existing users
-def create_streaks_for_existing_users(apps, schema_editor):
-    User = apps.get_model('foodtracker', 'User')
-    Streak = apps.get_model('foodtracker', 'Streak')
-    for user in User.objects.filter(streak__isnull=True):
-        Streak.objects.create(user=user)
+@receiver(post_save, sender=User)
+def create_user_water_goal(sender, instance, created, **kwargs):
+    if created:
+        WaterGoal.objects.create(
+            user=instance,
+            daily_goal=8,
+            reminder_enabled=False,
+            reminder_interval=60
+        )

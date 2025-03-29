@@ -19,4 +19,10 @@ urlpatterns = [
 
     path('categories', views.categories_view, name='categories_view'),
     path('categories/<str:category_name>', views.category_details_view, name='category_details_view'),
+
+    path('water/', views.water_tracker_view, name='water_tracker'),
+    path('water/log/', views.log_water, name='log_water'),  # Added slash
+    path('water/settings/', views.water_settings_view, name='water_settings'),  # Added slash
+    path('water/history/', views.water_history_view, name='water_history'),  # Added slash
+    path('water/export/', views.export_water_data, name='export_water_data'),  # Added slash
 ]
