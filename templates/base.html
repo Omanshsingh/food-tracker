@@ -380,6 +380,15 @@
                 });
             });
         </script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            // Remove streak badge if it exists
+            document.addEventListener('DOMContentLoaded', function() {
+                const streakBadge = document.querySelector('.streak-badge');
+                if (streakBadge) streakBadge.remove();
+            });
+        </script>
         {% endblock %}
+        
     </body>
 </html>

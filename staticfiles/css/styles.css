@@ -36,24 +36,6 @@ footer {
 .dropdown-menu {
     background-color: #221e1e !important;
 }
-.streak-badge {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: #ff6b6b;
-    color: white;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-weight: bold;
-    transition: all 0.3s;
-  }
-  .streak-hot {
-    background: #ff9a3c;
-    transform: scale(1.1);
-  }
-  .streak-cold {
-    background: #6b6bff;
-  }
  /* ====================== */
 /* WATER TRACKER STYLES */
 /* ====================== */
