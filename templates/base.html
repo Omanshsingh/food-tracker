@@ -103,16 +103,11 @@
                 display: flex;
                 align-items: center;
                 gap: 0.5rem;
-                white-space: nowrap;
             }
             
             .dropdown-item:hover {
                 background-color: rgba(67, 97, 238, 0.1);
                 transform: translateX(5px);
-            }
-
-            .dropdown-item .badge {
-                flex-shrink: 0;
             }
             
             /* Dark mode toggle */
@@ -220,7 +215,7 @@
         <nav class='navbar navbar-expand-lg navbar-dark sticky-top'>
             <div class='container-fluid'>
                 <a class='navbar-brand animate__animated animate__fadeIn' href="{% url 'index' %}">
-                    <i class='fas fa-pepper-hot'></i> Smart Scan
+                    <i class='fas fa-heartbeat'></i> Smart Scan
                 </a>
                 <button class='navbar-toggler' type='button' data-bs-toggle='collapse' data-bs-target='#navbarColor' aria-controls='navbarColor' aria-expanded='false' aria-label='Toggle navigation'>
                     <span class='navbar-toggler-icon'></span>
@@ -246,14 +241,12 @@
                             <a class='nav-link dropdown-toggle' data-bs-toggle='dropdown' href='#' role='button' aria-haspopup='true' aria-expanded='false'>
                                 <i class='fas fa-pizza-slice'></i> Food Categories
                             </a>
-                            <div class='dropdown-menu animate__animated animate__fadeIn' style="min-width: 240px;">
+                            <div class='dropdown-menu animate__animated animate__fadeIn'>
                                 {% for category in categories %}
-                                <a class='dropdown-item d-flex justify-content-between align-items-center' href="{% url 'category_details_view' category.category_name %}">
-                                    <span class="text-truncate">
-                                        <i class="fas fa-{{ category.icon|default:'tag' }} me-2"></i>
-                                        {{ category }}
-                                    </span>
-                                    <span class='badge bg-primary rounded-pill ms-2'>{{ category.count_food_by_category }}</span>
+                                <a class='dropdown-item' href="{% url 'category_details_view' category.category_name %}">
+                                    <i class="fas fa-{{ category.icon|default:'tag' }} me-2"></i>
+                                    {{ category }} &nbsp;
+                                    <span class='badge bg-primary rounded-pill'>{{ category.count_food_by_category }}</span>
                                 </a>
                                 {% endfor %}
                             </div>
