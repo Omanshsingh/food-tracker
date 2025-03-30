@@ -10,6 +10,8 @@ from django.urls import reverse
 from django.utils import timezone
 from datetime import datetime, timedelta
 import csv
+import json
+from django.core.serializers.json import DjangoJSONEncoder
 
 from .models import User, Food, FoodCategory, FoodLog, Image, Weight, FavoriteFood, WaterIntake, WaterGoal
 from .forms import FoodForm, ImageForm, WaterIntakeForm, WaterGoalForm
@@ -36,13 +38,30 @@ def water_tracker_view(request):
     # Calculate progress percentage
     progress = min(100, (water_intake.glasses / water_goal.daily_goal) * 100) if water_goal.daily_goal else 0
     
+    # Calculate remaining glasses
+    remaining = max(0, water_goal.daily_goal - water_intake.glasses)
+    
+    # Get weekly data and prepare for template
+    weekly_data = get_weekly_water_data(request.user)
+    
+    # Prepare chart data
+    chart_labels = [item['date'].strftime('%Y-%m-%d') for item in weekly_data]
+    chart_intake = [item['glasses'] for item in weekly_data]
+    chart_goal = weekly_data[0]['goal'] if weekly_data else 0
+    
     context = {
         'categories': FoodCategory.objects.all(),
         'water_intake': water_intake,
         'water_goal': water_goal,
         'progress': progress,
+        'remaining': remaining,
         'today': today,
-        'weekly_data': get_weekly_water_data(request.user),
+        'weekly_data': weekly_data,
+        'chart_labels': chart_labels,
+        'chart_intake': chart_intake,
+        'chart_goal': chart_goal,
+        'weekly_data_json': json.dumps(weekly_data, cls=DjangoJSONEncoder),
+        'water_history': WaterIntake.objects.filter(user=request.user).order_by('-date')[:5]
     }
     return render(request, 'water_tracker.html', context)
 
@@ -177,6 +196,9 @@ def get_weekly_water_data(user):
         })
     
     return data
+
+# [Rest of your existing views (authentication, food management, weight tracking, etc.) 
+# remain exactly the same as in your original file]
 
 # ======================
 # AUTHENTICATION VIEWS

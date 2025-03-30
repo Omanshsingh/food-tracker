@@ -1,75 +1,534 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
-
-{% block title %}Water Tracker | Smart Scan{% endblock %}
+{% load custom_filters %}
+{% block title %}Water Tracker | Daily Intake{% endblock %}
 
 {% block body %}
-<div class="container py-4">
-    <div class="card shadow mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">
-                <i class="fas fa-tint me-2"></i>Today's Water Intake
-                <span class="float-end">{{ today|date:"F j, Y" }}</span>
-            </h5>
-        </div>
-        
-        <div class="card-body">
-            <!-- Status Display -->
-            <div class="text-center mb-4">
-                <h3 class="{{ status_class }} mb-2">
-                    <i class="fas 
-                    {% if status == "Not started" %}fa-times
-                    {% elif status == "Low hydration" %}fa-exclamation
-                    {% elif status == "Good progress" %}fa-spinner
-                    {% elif status == "Goal achieved!" %}fa-check
-                    {% else %}fa-trophy{% endif %} 
-                    me-2"></i>{{ status }}
-                </h3>
-                <p class="text-muted">
-                    {% if water_intake.glasses < water_goal.daily_goal %}
-                        {{ remaining }} more glasses to reach your goal!
-                    {% else %}
-                        You've met your daily goal!
-                    {% endif %}
-                </p>
-            </div>
-            
-            <!-- Progress Bar -->
-            <div class="progress mb-4" style="height: 30px;">
-                <div class="progress-bar progress-bar-striped {{ status_class }}" 
-                     role="progressbar" 
-                     style="width: {{ progress }}%"
-                     aria-valuenow="{{ water_intake.glasses }}"
-                     aria-valuemin="0"
-                     aria-valuemax="{{ water_goal.daily_goal }}">
-                    {{ water_intake.glasses }}/{{ water_goal.daily_goal }} glasses
+<div class='py-4 mt-auto water-tracker-container'>
+    <div class='container-fluid px-4'>
+        <div class='row justify-content-center'>
+            <div class='col-xl-12'>
+                <div class='row'>
+                    <!-- Left Column - Water Tracking -->
+                    <div class='col-md-6 mt-4'>
+                        <div class='card bg-secondary mb-3 water-card'>
+                            <div class='card-header water-card-header d-flex justify-content-between align-items-center'>
+                                <h5>Today's Water Intake</h5>
+                                <h5><strong class='date-badge'>{{ today|date:"D, jS F Y" }}</strong></h5>
+                            </div>
+                            <div class='card-body'>
+                                <!-- Water Status -->
+                                <div class='text-center mb-4'>
+                                    {% if progress >= 100 %}
+                                        <h3 class="text-success mb-2">
+                                            <i class="fas fa-check-circle me-2" aria-hidden="true"></i>Goal Achieved!
+                                        </h3>
+                                    {% elif progress >= 75 %}
+                                        <h3 class="text-info mb-2">
+                                            <i class="fas fa-spinner me-2" aria-hidden="true"></i>Good Progress
+                                        </h3>
+                                    {% elif progress > 0 %}
+                                        <h3 class="text-warning mb-2">
+                                            <i class="fas fa-exclamation-circle me-2" aria-hidden="true"></i>Keep Going
+                                        </h3>
+                                    {% else %}
+                                        <h3 class="text-danger mb-2">
+                                            <i class="fas fa-times-circle me-2" aria-hidden="true"></i>Not Started
+                                        </h3>
+                                    {% endif %}
+                                    
+                                    <p class="text-muted">
+                                        {% if progress < 100 %}
+                                            {{ water_goal.daily_goal|subtract:water_intake.glasses }} more glasses to reach your goal!
+                                        {% else %}
+                                            You've met your daily goal! 🎉
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                
+                                <!-- Progress Bar -->
+                                <div class='progress mb-4' style="height: 30px;" role="progressbar" 
+                                     aria-label="Daily water intake progress"
+                                     aria-valuenow='{{ water_intake.glasses }}'
+                                     aria-valuemin='0'
+                                     aria-valuemax='{{ water_goal.daily_goal }}'>
+                                    <div class='progress-bar progress-bar-striped 
+                                        {% if progress >= 100 %}bg-success
+                                        {% elif progress >= 75 %}bg-info
+                                        {% elif progress > 0 %}bg-warning
+                                        {% else %}bg-danger{% endif %}' 
+                                        style='width: {{ progress }}%; transition: width 0.5s ease-in-out;'>
+                                        {{ water_intake.glasses }}/{{ water_goal.daily_goal }} glasses
+                                    </div>
+                                </div>
+                                
+                                <!-- Water Controls -->
+                                <div class='text-center water-controls'>
+                                    <form method="post" action="{% url 'log_water' %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="remove">
+                                        <button type="submit" class='btn btn-danger btn-sm btn-water-remove' 
+                                                {% if water_intake.glasses == 0 %}disabled{% endif %}
+                                                aria-label="Remove one glass of water">
+                                            <i class='fas fa-minus' aria-hidden="true"></i> Remove
+                                        </button>
+                                    </form>
+                                    
+                                    <div class='water-counter mx-3'>
+                                        <span>{{ water_intake.glasses }}</span>
+                                        <small>glasses</small>
+                                    </div>
+                                    
+                                    <form method="post" action="{% url 'log_water' %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="add">
+                                        <button type="submit" class='btn btn-success btn-sm btn-water-add'
+                                                aria-label="Add one glass of water">
+                                            <i class='fas fa-plus' aria-hidden="true"></i> Add
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Recent Water Log -->
+                        <div class='card bg-secondary mb-3 water-card'>
+                            <div class='card-header water-card-header'>
+                                <h5>Recent Water Intake</h5>
+                            </div>
+                            <div class='card-body'>
+                                {% if water_history %}
+                                    <div class="table-responsive">
+                                        <table class='table table-hover' aria-label="Recent water intake history">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Date</th>
+                                                    <th scope="col">Glasses</th>
+                                                    <th scope="col">Goal</th>
+                                                    <th scope="col">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for entry in water_history|slice:":5" %}
+                                                    <tr>
+                                                        <td>{{ entry.date|date:"M j" }}</td>
+                                                        <td>{{ entry.glasses }}</td>
+                                                        <td>{{ water_goal.daily_goal }}</td>
+                                                        <td>
+                                                            {% if entry.glasses >= water_goal.daily_goal %}
+                                                                <span class='badge bg-success'>Met Goal</span>
+                                                            {% else %}
+                                                                <span class='badge bg-warning'>Incomplete</span>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <div class="empty-state">
+                                        <i class="fas fa-tint-slash"></i>
+                                        <p>No water intake history yet.</p>
+                                    </div>
+                                {% endif %}
+                                <a href="{% url 'water_history' %}" class="btn btn-outline-primary btn-sm mt-2 btn-view-all">
+                                    View Full History
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column - Charts and Settings -->
+                    <div class='col-md-6 mt-4'>
+                        <!-- Weekly Progress Chart -->
+                        <div class='card bg-secondary mb-3 water-card'>
+                            <div class='card-header water-card-header'>
+                                <h5>Weekly Progress</h5>
+                            </div>
+                            <div class='card-body'>
+                                <div class="chart-container">
+                                    <canvas id="weeklyWaterChart" height="250" aria-label="Weekly water intake chart"></canvas>
+                                </div>
+                                <!-- Hidden element to pass data to JavaScript -->
+                                <div id="chartData" 
+                                     data-labels="{{ chart_labels|join:',' }}"
+                                     data-intake="{{ chart_intake|join:',' }}"
+                                     data-goal="{{ chart_goal }}"
+                                     style="display: none;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Water Goal Settings -->
+                        <div class='card bg-secondary water-card'>
+                            <div class='card-header water-card-header d-flex justify-content-between align-items-center'>
+                                <h5>Water Goal Settings</h5>
+                                <a href="{% url 'water_settings' %}" class="btn btn-sm btn-outline-light btn-edit"
+                                   aria-label="Edit water goal settings">
+                                    <i class="fas fa-cog" aria-hidden="true"></i> Edit
+                                </a>
+                            </div>
+                            <div class='card-body'>
+                                <div class="settings-grid">
+                                    <div class="setting-item">
+                                        <div class="setting-icon" style="background: #3a7bd5;">
+                                            <i class="fas fa-tint" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="setting-info">
+                                            <h6>Daily Goal</h6>
+                                            <p>{{ water_goal.daily_goal }} glasses</p>
+                                        </div>
+                                    </div>
+                                    <div class="setting-item">
+                                        <div class="setting-icon" style="background: #00d2ff;">
+                                            <i class="fas fa-bell" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="setting-info">
+                                            <h6>Reminder</h6>
+                                            <p>
+                                                {% if water_goal.reminder_enabled %}
+                                                    Enabled ({{ water_goal.reminder_interval }} hours)
+                                                {% else %}
+                                                    Disabled
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="setting-item">
+                                        <div class="setting-icon" style="background: #38b000;">
+                                            <i class="fas fa-fire" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="setting-info">
+                                            <h6>Current Streak</h6>
+                                            <p>{{ water_goal.current_streak }} days</p>
+                                        </div>
+                                    </div>
+                                    <div class="setting-item">
+                                        <div class="setting-icon" style="background: #70e000;">
+                                            <i class="fas fa-trophy" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="setting-info">
+                                            <h6>Best Streak</h6>
+                                            <p>{{ water_goal.best_streak }} days</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <!-- Controls -->
-            <form method="POST" action="{% url 'water_tracker' %}">
-                {% csrf_token %}
-                <div class="text-center">
-                    <button type="submit" name="action" value="remove" 
-                            class="btn btn-danger btn-sm" 
-                            {% if water_intake.glasses == 0 %}disabled{% endif %}>
-                        <i class="fas fa-minus"></i> Remove
-                    </button>
-                    <span class="mx-3 fs-4">{{ water_intake.glasses }}</span>
-                    <button type="submit" name="action" value="add" 
-                            class="btn btn-success btn-sm">
-                        <i class="fas fa-plus"></i> Add
-                    </button>
-                </div>
-            </form>
-        </div>
-        
-        <div class="card-footer bg-light">
-            <small class="text-muted">
-                <i class="fas fa-info-circle me-1"></i>
-                Goal: {{ water_goal.daily_goal }} glasses per day
-            </small>
         </div>
     </div>
 </div>
+
+<style>
+    /* Modern Water Tracker Styles */
+    .water-tracker-container {
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+        min-height: 100vh;
+    }
+    
+    .water-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease;
+    }
+    
+    .water-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .water-card-header {
+        background: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%);
+        color: white;
+        padding: 1.25rem 1.5rem;
+        border-bottom: none;
+    }
+    
+    .date-badge {
+        background: rgba(255,255,255,0.2);
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+    }
+    
+    /* Water Controls */
+    .water-controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+    
+    .btn-water-add, .btn-water-remove {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        border: none;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-water-add {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+    
+    .btn-water-remove {
+        background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+        color: white;
+    }
+    
+    .btn-water-add:hover, .btn-water-remove:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+    
+    .water-counter {
+        text-align: center;
+        min-width: 80px;
+    }
+    
+    .water-counter span {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1e3a8a;
+        display: block;
+        line-height: 1;
+    }
+    
+    .water-counter small {
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+    
+    /* History Section */
+    .table-hover tbody tr:hover {
+        background-color: rgba(0,0,0,0.05);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 2rem 0;
+        color: #94a3b8;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    /* Chart Section */
+    .chart-container {
+        position: relative;
+        height: 250px;
+        width: 100%;
+    }
+    
+    /* Settings Grid */
+    .settings-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .setting-item {
+        display: flex;
+        align-items: center;
+        background: rgba(241, 245, 249, 0.5);
+        padding: 1rem;
+        border-radius: 10px;
+    }
+    
+    .setting-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        color: white;
+    }
+    
+    .setting-info h6 {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-bottom: 0.25rem;
+    }
+    
+    .setting-info p {
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+    
+    /* Buttons */
+    .btn-view-all, .btn-edit {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-view-all:hover, .btn-edit:hover {
+        background: rgba(255,255,255,0.3);
+        transform: translateX(3px);
+    }
+    
+    /* Dark Mode Support */
+    body.dark-mode .water-tracker-container {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    }
+    
+    body.dark-mode .water-card-header {
+        background: linear-gradient(135deg, #1e40af 0%, #0369a1 100%);
+    }
+    
+    body.dark-mode .water-counter span {
+        color: #bfdbfe;
+    }
+    
+    body.dark-mode .empty-state {
+        color: #64748b;
+    }
+    
+    body.dark-mode .setting-item {
+        background: rgba(30, 41, 59, 0.5);
+    }
+    
+    body.dark-mode .setting-info h6 {
+        color: #94a3b8;
+    }
+    
+    body.dark-mode .setting-info p {
+        color: #e2e8f0;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 992px) {
+        .settings-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .water-counter span {
+            font-size: 2rem;
+        }
+        
+        .btn-water-add, .btn-water-remove {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block script %}
+    {{ block.super }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the chart data from the hidden element
+            const chartData = document.getElementById('chartData');
+            const ctx = document.getElementById('weeklyWaterChart').getContext('2d');
+            
+            // Error handling for missing data
+            if (!chartData || !chartData.dataset.labels || !chartData.dataset.intake || !chartData.dataset.goal) {
+                console.error("Missing or invalid chart data");
+                ctx.canvas.parentNode.innerHTML = "<p class='text-muted text-center'>Chart data unavailable</p>";
+                return;
+            }
+
+            // Parse the data
+            const labels = chartData.dataset.labels.split(',');
+            const intakeData = chartData.dataset.intake.split(',').map(Number);
+            const goalValue = parseFloat(chartData.dataset.goal);
+            
+            // Create the chart
+            const weeklyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Glasses Consumed',
+                            data: intakeData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1,
+                            borderRadius: 5
+                        },
+                        {
+                            label: 'Daily Goal',
+                            data: Array(labels.length).fill(goalValue),
+                            type: 'line',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Glasses of Water'
+                            },
+                            ticks: {
+                                stepSize: 1
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y + ' glass' + (context.parsed.y !== 1 ? 'es' : '');
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
 {% endblock %}
