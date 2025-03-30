@@ -32,16 +32,19 @@ class Food(models.Model):
     carbohydrates = models.DecimalField(max_digits=7, decimal_places=2)
     protein = models.DecimalField(max_digits=7, decimal_places=2)
     category = models.ForeignKey(FoodCategory, on_delete=models.CASCADE, related_name='food_category')
+    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f'{self.food_name} - category: {self.category}'
 
 class Image(models.Model):
     food = models.ForeignKey(Food, on_delete=models.CASCADE, related_name='get_images')
-    image = models.ImageField(upload_to='images/')
+    image = models.ImageField(upload_to='food_images/')
 
     def __str__(self):
-        return f'{self.image}'
+        return f'{self.food.food_name} - Image'
+
+# ... [Keep all your other models unchanged] ...
 
 class Streak(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='streak')
@@ -164,4 +167,4 @@ def create_user_water_goal(sender, instance, created, **kwargs):
             daily_goal=8,
             reminder_enabled=False,
             reminder_interval=60
-        )
+        ) 
