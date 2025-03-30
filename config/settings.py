@@ -69,7 +69,7 @@ DATABASES = {
         'USER': config('DATABASE_USER'),
         'PASSWORD': config('DATABASE_PASS'),
         'HOST': config('DATABASE_HOST'),
-        'PORT': '5433',  # leave blank so the default port is selected
+        'PORT': '5432',  # leave blank so the default port is selected
     }
 }
 

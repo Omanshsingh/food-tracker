@@ -1,5 +1,6 @@
 from django.urls import path
-
+from django.conf import settings
+from django.conf.urls.static import static
 from . import views
 
 
@@ -25,4 +26,4 @@ urlpatterns = [
     path('water/settings/', views.water_settings_view, name='water_settings'),  # Added slash
     path('water/history/', views.water_history_view, name='water_history'),  # Added slash
     path('water/export/', views.export_water_data, name='export_water_data'),  # Added slash
-]
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
