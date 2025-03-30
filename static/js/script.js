@@ -54,3 +54,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const foodItems = JSON.parse(localStorage.getItem('foodItems')) || [];
     return foodItems.reduce((total, item) => total + Number(item.calories), 0);
   }
+  /* ===== DROPDOWN OVERLAP FIX ===== */
+.nav-item.dropdown .dropdown-menu {
+  z-index: 1050 !important; /* Ensures dropdown stays on top */
+  overflow: hidden;
+}
+
+.nav-item.dropdown .dropdown-item {
+  white-space: nowrap;
+  display: flex !important;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 220px;
+}
+
+.nav-item.dropdown .badge {
+  flex-shrink: 0;
+  margin-left: 12px;
+}

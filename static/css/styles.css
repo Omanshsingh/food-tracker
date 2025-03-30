@@ -1,3 +1,23 @@
+/* ======================== */
+/* DROPDOWN OVERLAP FIX */
+/* ======================== */
+.navbar .dropdown-menu {
+    z-index: 1051 !important; /* Must be higher than other elements */
+    position: absolute; /* Required for z-index to work */
+    will-change: transform; /* Optimizes rendering */
+}
+
+/* Ensure parent doesn't create stacking context */
+.navbar {
+    position: static !important;
+    z-index: auto !important;
+}
+
+/* Fix for any content sections that might overlap */
+.main-content {
+    position: relative;
+    z-index: 1; /* Lower than dropdown */
+}
 /* Ensure elements above do not block clicks */
 * {
     pointer-events: auto !important;
