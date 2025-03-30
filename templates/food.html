@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-
 {% load static %}
 
 {% block title %}Food Tracker | {{ food.food_name }}{% endblock %}
@@ -13,85 +12,105 @@
         <h5>Category: {{ food.category }}</h5>
 
         <div class='row justify-content-center'>
-            <div class='col-6'>
-
+            <div class='col-md-6'>
+                <!-- Food Image -->
                 {% for image in images %}
-                    <!-- Food image -->
-                    <a href='#'>
+                    <div class='mb-4'>
                         <img 
                             src="{{ image.image.url|default:'../../static/images/no_image.png' }}" 
-                            class='img-fluid'
-                            alt='food image'
+                            class='img-fluid rounded shadow'
+                            alt='{{ food.food_name }}'
+                            style='max-height: 400px; width: 100%; object-fit: cover;'
                         >
-                    </a>
+                    </div>
+                {% empty %}
+                    <div class='mb-4'>
+                        <img 
+                            src="{% static 'images/no_image.png' %}" 
+                            class='img-fluid rounded shadow'
+                            alt='No food image'
+                            style='max-height: 400px; width: 100%; object-fit: cover;'
+                        >
+                    </div>
                 {% endfor %}
+
+                <!-- DESCRIPTION/INSIGHTS DISPLAY -->
+                <div class='card shadow mb-4'>
+                    <div class='card-header bg-primary text-white'>
+                        <h4 class='mb-0'>Description & Insights</h4>
+                    </div>
+                    <div class='card-body'>
+                        {% if food.description %}
+                            <div style='white-space: pre-line;'>{{ food.description }}</div>
+                        {% else %}
+                            <p class='text-muted'>No details provided.</p>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
             
-            <div class='col-6'>
-                <div class='card text-white bg-info mb-3'>
+            <div class='col-md-6'>
+                <!-- Nutrition Facts -->
+                <div class='card text-white bg-info mb-4 shadow'>
                     <div class='card-header'>
                         <div class='d-flex w-100 justify-content-between'>
                             <h5 class='card-title mb-1'>
-                                Calories per {{ food.quantity|floatformat:0 }} grams:
+                                <i class='fas fa-fire'></i> Calories per {{ food.quantity|floatformat:0 }}g:
                             </h5>
-                            <p><strong>{{ food.calories }}</strong></p>
-
-                            <input type='hidden' id='calories_details' name='calories_details' value='{{ food.calories }}'>
-                            <input type='hidden' id='fat_details' name='calories_details' value='{{ food.fat }}'>
-                            <input type='hidden' id='carbohydrates_details' name='calories_details' value='{{ food.carbohydrates }}'>
-                            <input type='hidden' id='protein_details' name='calories_details' value='{{ food.protein }}'>
-                        
+                            <h4><strong>{{ food.calories }}</strong></h4>
                         </div>
                     </div>
-                    
                     <div class='card-body'>
-
-                        <div class='d-flex w-100 justify-content-between'>
-                            <h5 class='card-title'>
-                                Macronutrients (g) per {{ food.quantity|floatformat:0 }} grams:
-                            </h5>
-                        </div>
-
-                        <div class='d-flex w-100 justify-content-between'>
-                            <p class='mb-1'>Fat:</p>
-                            <p><strong>{{ food.fat }}</strong></p>
-                        </div>
-
-                        <div class='d-flex w-100 justify-content-between'>
-                            <p class='mb-1'>Carbs:</p>
-                            <p><strong>{{ food.carbohydrates }}</strong></p>
-                        </div>
-
-                        <div class='d-flex w-100 justify-content-between'>
-                            <p class='mb-1'>Protein:</p>
-                            <p><strong>{{ food.protein }}</strong></p>
+                        <h5 class='card-title mb-3'>
+                            <i class='fas fa-utensils'></i> Macronutrients per {{ food.quantity|floatformat:0 }}g:
+                        </h5>
+                        <div class='nutrition-facts'>
+                            <div class='d-flex justify-content-between mb-2'>
+                                <span>Fat:</span>
+                                <strong>{{ food.fat }}g</strong>
+                            </div>
+                            <div class='d-flex justify-content-between mb-2'>
+                                <span>Carbohydrates:</span>
+                                <strong>{{ food.carbohydrates }}g</strong>
+                            </div>
+                            <div class='d-flex justify-content-between mb-2'>
+                                <span>Protein:</span>
+                                <strong>{{ food.protein }}g</strong>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class='card bg-secondary mb-3'>
-                    <div class='card-header'>
-                        <h4>Macronutrients breakdown</h4>
+                <!-- Nutrition Chart -->
+                <div class='card shadow mb-4'>
+                    <div class='card-header bg-secondary text-white'>
+                        <h4 class='mb-0'><i class='fas fa-chart-pie'></i> Macronutrients Breakdown</h4>
                     </div>
-                    
-                    <div class='card-body justify-content-center'>
+                    <div class='card-body'>
                         <div class='chart-bar'>
                             <canvas id='myBarChart'></canvas>
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
-
     </div>
 </div>
-{% endblock %}
 
-{% block script %}
-    <!-- Page level plugins -->    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+<!-- Chart.js Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+<script src="{% static 'js/foodDetails.js' %}"></script>
 
-    <!-- Page level custom scripts -->
-    <script src="{% static 'js/foodDetails.js' %}"></script>
+<style>
+    .nutrition-facts {
+        background-color: rgba(255,255,255,0.1);
+        padding: 15px;
+        border-radius: 8px;
+    }
+    .card-body div[style*='white-space'] {
+        line-height: 1.6;
+        font-size: 1rem;
+    }
+</style>
 {% endblock %}
