@@ -11,90 +11,153 @@
             <div class='col-xl-12'>
                 <div class='row'>
                     <div class='col-md-6 mt-4'>
-                        <div class='card bg-secondary mb-3'>
-                            <div class='card-header'>
-                                <h5>Select food to add to the Food Log</h5>
+                        <div class='card bg-secondary mb-3 shadow-lg'>
+                            <div class='card-header d-flex justify-content-between align-items-center bg-dark'>
+                                <h5 class='mb-0'>Select food to add to the Food Log</h5>
+                                <i class='fas fa-utensils'></i>
                             </div>
                             <div class='card-body'>
                                 <form method='POST'>
                                     {% csrf_token %}
-                                    <div class='row'>
-                                        <div class='col-8'>
-                                            <select class='form-select' name='food_consumed' id='food_consumed'>
+                                    <div class='row g-2'>
+                                        <div class='col-7'>
+                                            <select class='form-select form-select-lg' name='food_consumed' id='food_consumed'>
                                                 {% for food in foods %}
-                                                    <option value='{{ food.id }}'>{{ food.food_name }}</option>
+                                                    <option value='{{ food.id }}' data-base-quantity='100'>{{ food.food_name }}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
-                                        <div class='col-4'>
-                                            <button type='submit' class='btn btn-primary'>Add Food</button>
+                                        <div class='col-3'>
+                                            <input type='number' class='form-control form-select-lg' 
+                                                   name='quantity' id='quantity' 
+                                                   value='100' min='1' max='10000' step='1'
+                                                   placeholder='Quantity (g)'>
+                                        </div>
+                                        <div class='col-2'>
+                                            <button type='submit' class='btn btn-primary w-100 h-100'>
+                                                <i class='fas fa-plus-circle me-2'></i>Add
+                                            </button>
                                         </div>
                                     </div>
                                 </form>
                             </div>
                         </div>
-                        <div class='card bg-secondary mb-3'>
-                            <div class='card-header'>
-                                <h5>Food consumed today</h5>
-                                <h5><strong class='text-primary'>{% now 'D, jS F Y' %}</strong></h5>
+                        <div class='card bg-secondary mb-3 shadow-lg'>
+                            <div class='card-header bg-dark'>
+                                <div class='d-flex justify-content-between align-items-center'>
+                                    <h5 class='mb-0'>Food consumed today</h5>
+                                    <h5 class='mb-0'><strong class='text-primary'>{% now 'D, jS F Y' %}</strong></h5>
+                                </div>
                             </div>
-                            <div class='card-body'>
-                                <table id='foodtable' class='table table-hover'>
-                                    <thead>
-                                        <tr>
-                                            <th>Food Item</th>
-                                            <th>Calories</th>
-                                            <th>Fat (g)</th>
-                                            <th>Carbs (g)</th>
-                                            <th>Protein (g)</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for food_item in user_food_log %}
+                            <div class='card-body p-0'>
+                                <div class='table-responsive'>
+                                    <table id='foodtable' class='table table-hover mb-0'>
+                                        <thead class='table-dark'>
                                             <tr>
-                                                <td>{{ food_item.food_consumed.food_name }}</td>
-                                                <td>{{ food_item.food_consumed.calories }}</td>
-                                                <td>{{ food_item.food_consumed.fat }}</td>
-                                                <td>{{ food_item.food_consumed.carbohydrates }}</td>
-                                                <td>{{ food_item.food_consumed.protein }}</td>   
-                                                <td>
-                                                    <a class='btn btn-danger' href="{% url 'food_log_delete' food_item.id %}">
-                                                        <i class='fas fa-trash-alt'></i>
-                                                    </a>
-                                                </td>
+                                                <th class='ps-4'>Food Item</th>
+                                                <th>Quantity (g)</th>
+                                                <th>Calories</th>
+                                                <th>Fat (g)</th>
+                                                <th>Carbs (g)</th>
+                                                <th>Protein (g)</th>
+                                                <th class='pe-4'>Action</th>
                                             </tr>
-                                        {% endfor %}
-                                        <tr>
-                                            <td><b>Total</b></td>
-                                            <td id='totalCalories'><b></b></td>
-                                            <td id='totalFat'><b></b></td>
-                                            <td id='totalCarbohydrates'><b></b></td>
-                                            <td id='totalProtein'><b></b></td>
-                                            <td></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {% for food_item in user_food_log %}
+                                                <tr class='align-middle' 
+                                                    data-food-id='{{ food_item.food_consumed.id }}'
+                                                    data-base-quantity='100'
+                                                    data-base-calories='{{ food_item.food_consumed.calories }}'
+                                                    data-base-fat='{{ food_item.food_consumed.fat }}'
+                                                    data-base-carbs='{{ food_item.food_consumed.carbohydrates }}'
+                                                    data-base-protein='{{ food_item.food_consumed.protein }}'>
+                                                    <td class='ps-4'>{{ food_item.food_consumed.food_name }}</td>
+                                                    <td>
+                                                        <input type='number' 
+                                                               class='form-control quantity-input' 
+                                                               value='{{ food_item.quantity|default:100 }}' 
+                                                               min='1' max='10000' step='1'
+                                                               style='width: 80px;'>
+                                                    </td>
+                                                    <td class='calories'>{{ food_item.calories|floatformat:1 }}</td>
+                                                    <td class='fat'>{{ food_item.fat|floatformat:1 }}</td>
+                                                    <td class='carbs'>{{ food_item.carbs|floatformat:1 }}</td>
+                                                    <td class='protein'>{{ food_item.protein|floatformat:1 }}</td>
+                                                    <td class='pe-4'>
+                                                        <a class='btn btn-danger btn-sm' href="{% url 'food_log_delete' food_item.id %}">
+                                                            <i class='fas fa-trash-alt'></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                            <tr class='table-active fw-bold'>
+                                                <td class='ps-4'>Total</td>
+                                                <td id='totalQuantity'></td>
+                                                <td id='totalCalories'>0</td>
+                                                <td id='totalFat'>0</td>
+                                                <td id='totalCarbohydrates'>0</td>
+                                                <td id='totalProtein'>0</td>
+                                                <td class='pe-4'></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class='col-md-6 mt-4'>
-                        <div class='card bg-secondary mb-3'>
-                            <div class='card-header'>
-                                <h5>Daily Calorie Goal - <strong class='text-primary'>2,000 calories</strong></h5>
+                        <div class='card bg-secondary mb-3 shadow-lg'>
+                            <div class='card-header d-flex justify-content-between align-items-center bg-dark'>
+                                <h5 class='mb-0'>Daily Calorie Goal</h5>
+                                <div>
+                                    <strong class='text-primary' id='calorieGoalDisplay'>2,000 calories</strong>
+                                    <button class='btn btn-sm btn-outline-light ms-2' id='editGoalBtn'>
+                                        <i class='fas fa-edit'></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class='card-body'>
+                                <div class='input-group mb-3' id='goalInputGroup' style='display: none;'>
+                                    <input type='number' class='form-control' id='calorieGoalInput' value='2000' min='1'>
+                                    <button class='btn btn-success' id='saveGoalBtn'>Save</button>
+                                </div>
                                 <div class='progress' style="height: 40px;">
-                                    <div id='progressBar' class='progress-bar progress-bar-striped progress-bar-animated' role='progressbar' style='width: 0%; font-size: 25px;'>0%</div>
+                                    <div id='progressBar' class='progress-bar progress-bar-striped progress-bar-animated d-flex align-items-center justify-content-center' 
+                                         role='progressbar' style='width: 0%; font-size: 1.1rem; font-weight: 500;'>0%</div>
+                                </div>
+                                <div class='mt-3 d-flex justify-content-between'>
+                                    <small>0 calories</small>
+                                    <small id='caloriesConsumed'>0 calories</small>
+                                    <small id='calorieGoalText'>2,000 calories</small>
                                 </div>
                             </div>
                         </div>
-                        <div class='card bg-secondary mb-3'>
-                            <div class='card-header'>
-                                <h5>Macronutrients Breakdown</h5>
+                        <div class='card bg-secondary mb-3 shadow-lg'>
+                            <div class='card-header bg-dark'>
+                                <h5 class='mb-0'>Macronutrients Breakdown</h5>
                             </div>
                             <div class='card-body'>
-                                <canvas id='myPieChart'></canvas>
+                                <div class='chart-container' style='position: relative; height: 300px;'>
+                                    <canvas id='myPieChart'></canvas>
+                                </div>
+                                <div class='row text-center mt-3'>
+                                    <div class='col-4'>
+                                        <span class='d-inline-block me-2' style='width: 15px; height: 15px; background-color: #FFD700;'></span>
+                                        <span>Fat</span>
+                                        <div class='fw-bold' id='fat-percentage'>0%</div>
+                                    </div>
+                                    <div class='col-4'>
+                                        <span class='d-inline-block me-2' style='width: 15px; height: 15px; background-color: #90EE90;'></span>
+                                        <span>Carbs</span>
+                                        <div class='fw-bold' id='carbs-percentage'>0%</div>
+                                    </div>
+                                    <div class='col-4'>
+                                        <span class='d-inline-block me-2' style='width: 15px; height: 15px; background-color: #87CEEB;'></span>
+                                        <span>Protein</span>
+                                        <div class='fw-bold' id='protein-percentage'>0%</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -110,41 +173,210 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
     <script>
     document.addEventListener("DOMContentLoaded", function() {
+        let pieChart = null;
+        let calorieGoal = 2000;
+        
+        // Initialize with current goal if set
+        if (localStorage.getItem('calorieGoal')) {
+            calorieGoal = parseInt(localStorage.getItem('calorieGoal'));
+            document.getElementById('calorieGoalInput').value = calorieGoal;
+            document.getElementById('calorieGoalText').textContent = calorieGoal.toLocaleString() + ' calories';
+            document.getElementById('calorieGoalDisplay').textContent = calorieGoal.toLocaleString() + ' calories';
+        }
+
+        // Edit goal button
+        document.getElementById('editGoalBtn').addEventListener('click', function() {
+            const inputGroup = document.getElementById('goalInputGroup');
+            inputGroup.style.display = inputGroup.style.display === 'none' ? 'flex' : 'none';
+        });
+
+        // Save goal button
+        document.getElementById('saveGoalBtn').addEventListener('click', function() {
+            const newGoal = parseInt(document.getElementById('calorieGoalInput').value);
+            if (newGoal > 0) {
+                calorieGoal = newGoal;
+                localStorage.setItem('calorieGoal', calorieGoal);
+                document.getElementById('calorieGoalText').textContent = calorieGoal.toLocaleString() + ' calories';
+                document.getElementById('calorieGoalDisplay').textContent = calorieGoal.toLocaleString() + ' calories';
+                document.getElementById('goalInputGroup').style.display = 'none';
+                updateCharts();
+            }
+        });
+
+        // Calculate totals based on quantity inputs
         const calculateTotals = () => {
+            let totalQuantity = 0;
             let calories = 0, fat = 0, carbohydrates = 0, protein = 0;
+            
             document.querySelectorAll('#foodtable tbody tr:not(:last-child)').forEach(row => {
-                calories += parseFloat(row.cells[1].textContent) || 0;
-                fat += parseFloat(row.cells[2].textContent) || 0;
-                carbohydrates += parseFloat(row.cells[3].textContent) || 0;
-                protein += parseFloat(row.cells[4].textContent) || 0;
+                const quantity = parseFloat(row.querySelector('.quantity-input').value) || 100;
+                const baseQuantity = parseFloat(row.dataset.baseQuantity) || 100;
+                const baseCalories = parseFloat(row.dataset.baseCalories) || 0;
+                const baseFat = parseFloat(row.dataset.baseFat) || 0;
+                const baseCarbs = parseFloat(row.dataset.baseCarbs) || 0;
+                const baseProtein = parseFloat(row.dataset.baseProtein) || 0;
+                
+                // Calculate multiplier based on quantity vs base quantity
+                const multiplier = quantity / baseQuantity;
+                
+                const rowCalories = baseCalories * multiplier;
+                const rowFat = baseFat * multiplier;
+                const rowCarbs = baseCarbs * multiplier;
+                const rowProtein = baseProtein * multiplier;
+                
+                // Update row values
+                row.querySelector('.calories').textContent = rowCalories.toFixed(1);
+                row.querySelector('.fat').textContent = rowFat.toFixed(1);
+                row.querySelector('.carbs').textContent = rowCarbs.toFixed(1);
+                row.querySelector('.protein').textContent = rowProtein.toFixed(1);
+                
+                // Add to totals
+                totalQuantity += quantity;
+                calories += rowCalories;
+                fat += rowFat;
+                carbohydrates += rowCarbs;
+                protein += rowProtein;
             });
-            document.getElementById('totalCalories').innerHTML = `<b>${calories}</b>`;
-            document.getElementById('totalFat').innerHTML = `<b>${Math.round(fat)}</b>`;
-            document.getElementById('totalCarbohydrates').innerHTML = `<b>${Math.round(carbohydrates)}</b>`;
-            document.getElementById('totalProtein').innerHTML = `<b>${Math.round(protein)}</b>`;
-            return { calories, fat, carbohydrates, protein };
+            
+            // Update totals row
+            document.getElementById('totalQuantity').textContent = totalQuantity.toFixed(0);
+            document.getElementById('totalCalories').textContent = calories.toFixed(1);
+            document.getElementById('totalFat').textContent = fat.toFixed(1);
+            document.getElementById('totalCarbohydrates').textContent = carbohydrates.toFixed(1);
+            document.getElementById('totalProtein').textContent = protein.toFixed(1);
+            
+            return { totalQuantity, calories, fat, carbohydrates, protein };
         };
         
-        const initCharts = (totals) => {
+        // Update charts with current data
+        const updateCharts = () => {
+            const totals = calculateTotals();
             let { fat, carbohydrates, protein, calories } = totals;
-            let total = fat + carbohydrates + protein;
-            let data = total ? [fat, carbohydrates, protein] : [1, 1, 1];
-            new Chart(document.getElementById('myPieChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Fat', 'Carbs', 'Protein'],
-                    datasets: [{ data, backgroundColor: ['#e5a641', '#55b560', '#419ad6'] }],
-                },
-                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-            });
-            let caloriePercentage = Math.min(Math.round((calories / 2000) * 100), 100);
+            let totalMacros = fat + carbohydrates + protein;
+            
+            // Update calories display
+            document.getElementById('caloriesConsumed').textContent = `${calories.toFixed(1)} calories`;
+            
+            // Update progress bar
+            let caloriePercentage = Math.min(Math.round((calories / calorieGoal) * 100), 100);
             let progressBar = document.getElementById('progressBar');
             progressBar.style.width = caloriePercentage + '%';
             progressBar.textContent = caloriePercentage + '%';
+            
+            // Update progress bar color
+            progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated d-flex align-items-center justify-content-center';
+            if (caloriePercentage >= 100) {
+                progressBar.classList.add('bg-danger');
+            } else if (caloriePercentage >= 75) {
+                progressBar.classList.add('bg-warning');
+            } else {
+                progressBar.classList.add('bg-success');
+            }
+            
+            // Calculate percentages for macros
+            const fatPercentage = totalMacros > 0 ? Math.round((fat / totalMacros) * 100) : 0;
+            const carbsPercentage = totalMacros > 0 ? Math.round((carbohydrates / totalMacros) * 100) : 0;
+            const proteinPercentage = totalMacros > 0 ? Math.round((protein / totalMacros) * 100) : 0;
+            
+            // Update percentage displays
+            document.getElementById('fat-percentage').textContent = `${fatPercentage}%`;
+            document.getElementById('carbs-percentage').textContent = `${carbsPercentage}%`;
+            document.getElementById('protein-percentage').textContent = `${proteinPercentage}%`;
+            
+            // Update pie chart
+            let data = totalMacros > 0 ? [fat, carbohydrates, protein] : [1, 1, 1];
+            
+            if (pieChart) {
+                pieChart.data.datasets[0].data = data;
+                pieChart.update();
+            } else {
+                const ctx = document.getElementById('myPieChart').getContext('2d');
+                
+                // Gradient colors
+                const gradientFat = ctx.createLinearGradient(0, 0, 0, 300);
+                gradientFat.addColorStop(0, '#FFD700');
+                gradientFat.addColorStop(1, '#FFA500');
+                
+                const gradientCarbs = ctx.createLinearGradient(0, 0, 0, 300);
+                gradientCarbs.addColorStop(0, '#90EE90');
+                gradientCarbs.addColorStop(1, '#228B22');
+                
+                const gradientProtein = ctx.createLinearGradient(0, 0, 0, 300);
+                gradientProtein.addColorStop(0, '#87CEEB');
+                gradientProtein.addColorStop(1, '#1E90FF');
+                
+                pieChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Fat', 'Carbs', 'Protein'],
+                        datasets: [{ 
+                            data, 
+                            backgroundColor: [gradientFat, gradientCarbs, gradientProtein],
+                            borderWidth: 2,
+                            borderColor: '#2C3E50',
+                            hoverBorderWidth: 3,
+                            hoverOffset: 10
+                        }],
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: {
+                                enabled: true,
+                                backgroundColor: 'rgba(0,0,0,0.8)',
+                                titleFont: { size: 14, weight: 'bold' },
+                                bodyFont: { size: 12 },
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        let value = context.raw || 0;
+                                        let percentage = context.dataset.data.reduce((a, b) => a + b, 0) > 0 ? 
+                                            Math.round((value / context.dataset.data.reduce((a, b) => a + b, 0)) * 100) : 0;
+                                        return [
+                                            `${label}:`,
+                                            `Amount: ${value.toFixed(1)}g`,
+                                            `Percentage: ${percentage}%`
+                                        ];
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '65%',
+                        rotation: -30,
+                        circumference: 360,
+                        animation: {
+                            animateScale: true,
+                            animateRotate: true,
+                            duration: 1000,
+                            easing: 'easeOutQuart'
+                        },
+                        elements: {
+                            arc: {
+                                borderRadius: 10,
+                                borderJoinStyle: 'round'
+                            }
+                        }
+                    }
+                });
+            }
         };
         
-        let totals = calculateTotals();
-        initCharts(totals);
+        // Event delegation for quantity inputs
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('quantity-input')) {
+                // Validate input
+                let value = parseFloat(e.target.value);
+                if (value < 1) e.target.value = 1;
+                if (value > 10000) e.target.value = 10000;
+                
+                updateCharts();
+            }
+        });
+        
+        // Initialize on load
+        updateCharts();
     });
     </script>
 {% endblock %}
