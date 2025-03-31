@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Water Tracker | Settings{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Light mode colors */
+    :root {
+        --card-bg-light: #ffffff;
+        --card-header-bg-light: #f8f9fa;
+        --card-text-light: #212529;
+        --card-border-light: rgba(0, 0, 0, 0.125);
+        --table-head-bg-light: #e9ecef;
+        --table-head-text-light: #212529;
+        --table-border-light: #dee2e6;
+        --btn-outline-light: #6c757d;
+        --btn-outline-hover-light: #f8f9fa;
+        --date-color-light: #0d6efd;
+    }
+
+    /* Dark mode colors */
+    :root {
+        --card-bg-dark: #2d3748;
+        --card-header-bg-dark: #1a202c;
+        --card-text-dark: #f7fafc;
+        --card-border-dark: #4a5568;
+        --table-head-bg-dark: #4a5568;
+        --table-head-text-dark: #f7fafc;
+        --table-border-dark: #4a5568;
+        --btn-outline-dark: #f7fafc;
+        --btn-outline-hover-dark: #1a202c;
+        --date-color-dark: #63b3ed;
+    }
+
+    /* Apply light mode by default */
+    body {
+        --card-bg: var(--card-bg-light);
+        --card-header-bg: var(--card-header-bg-light);
+        --card-text: var(--card-text-light);
+        --card-border: var(--card-border-light);
+        --table-head-bg: var(--table-head-bg-light);
+        --table-head-text: var(--table-head-text-light);
+        --table-border: var(--table-border-light);
+        --btn-outline: var(--btn-outline-light);
+        --btn-outline-hover: var(--btn-outline-hover-light);
+        --date-color: var(--date-color-light);
+    }
+
+    /* Apply dark mode if preferred */
+    @media (prefers-color-scheme: dark) {
+        body {
+            --card-bg: var(--card-bg-dark);
+            --card-header-bg: var(--card-header-bg-dark);
+            --card-text: var(--card-text-dark);
+            --card-border: var(--card-border-dark);
+            --table-head-bg: var(--table-head-bg-dark);
+            --table-head-text: var(--table-head-text-dark);
+            --table-border: var(--table-border-dark);
+            --btn-outline: var(--btn-outline-dark);
+            --btn-outline-hover: var(--btn-outline-hover-dark);
+            --date-color: var(--date-color-dark);
+        }
+    }
+
+    /* Apply the variables */
+    .water-card {
+        background-color: var(--card-bg);
+        border-color: var(--card-border);
+        color: var(--card-text);
+        margin-bottom: 30px; /* Consistent spacing */
+    }
+
+    .water-card-header {
+        background-color: var(--card-header-bg) !important;
+        color: var(--card-text) !important;
+        border-bottom-color: var(--card-border) !important;
+    }
+
+    /* Form styles */
+    .form-control {
+        background-color: var(--card-bg);
+        color: var(--card-text);
+        border-color: var(--card-border);
+    }
+
+    .form-control:focus {
+        background-color: var(--card-bg);
+        color: var(--card-text);
+        border-color: var(--date-color);
+        box-shadow: 0 0 0 0.25rem rgba(var(--date-color), 0.25);
+    }
+
+    .form-check-input:checked {
+        background-color: var(--date-color);
+        border-color: var(--date-color);
+    }
+
+    .form-label {
+        color: var(--card-text);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class='py-5 mt-auto'>
+    <div class='container-fluid px-4'>
+        <div class='row justify-content-center'>
+            <div class='col-xl-12'>
+                <div class='row'>
+                    <!-- Left Column - Settings Form -->
+                    <div class='col-md-6 mt-5'>
+                        <div class='card shadow-lg water-card'>
+                            <div class='card-header water-card-header'>
+                                <h5 class='mb-0'>Water Goal Settings</h5>
+                            </div>
+                            <div class='card-body'>
+                                <form method="post" action="{% url 'water_settings' %}">
+                                    {% csrf_token %}
+                                    <div class="mb-4">
+                                        <label for="daily_goal" class="form-label">Daily Goal (glasses)</label>
+                                        <input type="number" class="form-control" id="daily_goal" name="daily_goal"
+                                               value="{{ water_goal.daily_goal }}" min="1" step="1" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="reminder_enabled"
+                                                   name="reminder_enabled" {% if water_goal.reminder_enabled %}checked{% endif %}>
+                                            <label class="form-check-label" for="reminder_enabled">
+                                                Enable Reminders
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="reminder_interval" class="form-label">Reminder Interval (hours)</label>
+                                        <input type="number" class="form-control" id="reminder_interval" name="reminder_interval"
+                                               value="{{ water_goal.reminder_interval }}" min="1" step="1"
+                                               {% if not water_goal.reminder_enabled %}disabled{% endif %}>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <a href="{% url 'water_tracker' %}" class="btn btn-outline-secondary">
+                                            Cancel
+                                        </a>
+                                        <button type="submit" class="btn btn-primary">
+                                            Save Changes
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Current Settings Preview -->
+                    <div class='col-md-6 mt-5'>
+                        <div class='card shadow-lg water-card'>
+                            <div class='card-header water-card-header'>
+                                <h5 class='mb-0'>Current Settings</h5>
+                            </div>
+                            <div class='card-body'>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <i class="fas fa-tint fa-2x text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class='mb-1'>Daily Goal</h6>
+                                                <p class='mb-0'>{{ water_goal.daily_goal }} glasses</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <i class="fas fa-bell fa-2x text-info"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class='mb-1'>Reminder</h6>
+                                                <p class='mb-0'>
+                                                    {% if water_goal.reminder_enabled %}
+                                                        Enabled ({{ water_goal.reminder_interval }}h)
+                                                    {% else %}
+                                                        Disabled
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+    {{ block.super }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Enable/disable reminder interval input based on checkbox
+            const reminderCheckbox = document.getElementById('reminder_enabled');
+            const reminderIntervalInput = document.getElementById('reminder_interval');
+
+            reminderCheckbox.addEventListener('change', function() {
+                reminderIntervalInput.disabled = !this.checked;
+            });
+        });
+    </script>
+{% endblock %}

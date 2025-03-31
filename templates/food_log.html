@@ -11,12 +11,12 @@
             <div class='col-xl-12'>
                 <div class='row'>
                     <div class='col-md-6 mt-4'>
-                        <div class='card bg-secondary mb-3 shadow-lg'>
-                            <div class='card-header d-flex justify-content-between align-items-center bg-dark'>
+                        <div class='card mb-3 shadow-lg' id='food-select-card'>
+                            <div class='card-header d-flex justify-content-between align-items-center' id='food-select-header'>
                                 <h5 class='mb-0'>Select food to add to the Food Log</h5>
                                 <i class='fas fa-utensils'></i>
                             </div>
-                            <div class='card-body'>
+                            <div class='card-body' id='food-select-body'>
                                 <form method='POST'>
                                     {% csrf_token %}
                                     <div class='row g-2'>
@@ -42,17 +42,17 @@
                                 </form>
                             </div>
                         </div>
-                        <div class='card bg-secondary mb-3 shadow-lg'>
-                            <div class='card-header bg-dark'>
+                        <div class='card mb-3 shadow-lg' id='food-log-card'>
+                            <div class='card-header' id='food-log-header'>
                                 <div class='d-flex justify-content-between align-items-center'>
                                     <h5 class='mb-0'>Food consumed today</h5>
-                                    <h5 class='mb-0'><strong class='text-primary'>{% now 'D, jS F Y' %}</strong></h5>
+                                    <h5 class='mb-0'><strong id='current-date'>{% now 'D, jS F Y' %}</strong></h5>
                                 </div>
                             </div>
-                            <div class='card-body p-0'>
+                            <div class='card-body p-0' id='food-log-body'>
                                 <div class='table-responsive'>
                                     <table id='foodtable' class='table table-hover mb-0'>
-                                        <thead class='table-dark'>
+                                        <thead id='food-table-head'>
                                             <tr>
                                                 <th class='ps-4'>Food Item</th>
                                                 <th>Quantity (g)</th>
@@ -107,20 +107,20 @@
                         </div>
                     </div>
                     <div class='col-md-6 mt-4'>
-                        <div class='card bg-secondary mb-3 shadow-lg'>
-                            <div class='card-header d-flex justify-content-between align-items-center bg-dark'>
+                        <div class='card mb-3 shadow-lg' id='calorie-goal-card'>
+                            <div class='card-header d-flex justify-content-between align-items-center' id='calorie-goal-header'>
                                 <h5 class='mb-0'>Daily Calorie Goal</h5>
                                 <div>
-                                    <strong class='text-primary' id='calorieGoalDisplay'>2,000 calories</strong>
-                                    <button class='btn btn-sm btn-outline-light ms-2' id='editGoalBtn'>
+                                    <strong id='calorieGoalDisplay'>2,000 calories</strong>
+                                    <button class='btn btn-sm ms-2' id='editGoalBtn'>
                                         <i class='fas fa-edit'></i>
                                     </button>
                                 </div>
                             </div>
-                            <div class='card-body'>
+                            <div class='card-body' id='calorie-goal-body'>
                                 <div class='input-group mb-3' id='goalInputGroup' style='display: none;'>
                                     <input type='number' class='form-control' id='calorieGoalInput' value='2000' min='1'>
-                                    <button class='btn btn-success' id='saveGoalBtn'>Save</button>
+                                    <button class='btn' id='saveGoalBtn'>Save</button>
                                 </div>
                                 <div class='progress' style="height: 40px;">
                                     <div id='progressBar' class='progress-bar progress-bar-striped progress-bar-animated d-flex align-items-center justify-content-center' 
@@ -133,11 +133,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class='card bg-secondary mb-3 shadow-lg'>
-                            <div class='card-header bg-dark'>
+                        <div class='card mb-3 shadow-lg' id='macro-card'>
+                            <div class='card-header' id='macro-header'>
                                 <h5 class='mb-0'>Macronutrients Breakdown</h5>
                             </div>
-                            <div class='card-body'>
+                            <div class='card-body' id='macro-body'>
                                 <div class='chart-container' style='position: relative; height: 300px;'>
                                     <canvas id='myPieChart'></canvas>
                                 </div>
@@ -165,7 +165,116 @@
             </div>
         </div>
     </div>
-</div>    
+</div>
+
+<style>
+    /* Light mode colors */
+    :root {
+        --card-bg-light: #ffffff;
+        --card-header-bg-light: #f8f9fa;
+        --card-text-light: #212529;
+        --card-border-light: rgba(0, 0, 0, 0.125);
+        --table-head-bg-light: #e9ecef;
+        --table-head-text-light: #212529;
+        --table-border-light: #dee2e6;
+        --btn-outline-light: #6c757d;
+        --btn-outline-hover-light: #f8f9fa;
+        --date-color-light: #0d6efd;
+    }
+
+    /* Dark mode colors */
+    :root {
+        --card-bg-dark: #2d3748;
+        --card-header-bg-dark: #1a202c;
+        --card-text-dark: #f7fafc;
+        --card-border-dark: #4a5568;
+        --table-head-bg-dark: #4a5568;
+        --table-head-text-dark: #f7fafc;
+        --table-border-dark: #4a5568;
+        --btn-outline-dark: #f7fafc;
+        --btn-outline-hover-dark: #1a202c;
+        --date-color-dark: #63b3ed;
+    }
+
+    /* Apply light mode by default */
+    body {
+        --card-bg: var(--card-bg-light);
+        --card-header-bg: var(--card-header-bg-light);
+        --card-text: var(--card-text-light);
+        --card-border: var(--card-border-light);
+        --table-head-bg: var(--table-head-bg-light);
+        --table-head-text: var(--table-head-text-light);
+        --table-border: var(--table-border-light);
+        --btn-outline: var(--btn-outline-light);
+        --btn-outline-hover: var(--btn-outline-hover-light);
+        --date-color: var(--date-color-light);
+    }
+
+    /* Apply dark mode if preferred */
+    @media (prefers-color-scheme: dark) {
+        body {
+            --card-bg: var(--card-bg-dark);
+            --card-header-bg: var(--card-header-bg-dark);
+            --card-text: var(--card-text-dark);
+            --card-border: var(--card-border-dark);
+            --table-head-bg: var(--table-head-bg-dark);
+            --table-head-text: var(--table-head-text-dark);
+            --table-border: var(--table-border-dark);
+            --btn-outline: var(--btn-outline-dark);
+            --btn-outline-hover: var(--btn-outline-hover-dark);
+            --date-color: var(--date-color-dark);
+        }
+    }
+
+    /* Apply the variables */
+    #food-select-card, #food-log-card, #calorie-goal-card, #macro-card {
+        background-color: var(--card-bg);
+        border-color: var(--card-border);
+        color: var(--card-text);
+    }
+
+    #food-select-header, #food-log-header, #calorie-goal-header, #macro-header {
+        background-color: var(--card-header-bg) !important;
+        color: var(--card-text) !important;
+        border-bottom-color: var(--card-border) !important;
+    }
+
+    #food-table-head {
+        background-color: var(--table-head-bg) !important;
+        color: var(--table-head-text) !important;
+    }
+
+    #foodtable {
+        --bs-table-color: var(--card-text);
+        --bs-table-border-color: var(--table-border);
+    }
+
+    #current-date, #calorieGoalDisplay {
+        color: var(--date-color) !important;
+    }
+
+    #editGoalBtn {
+        color: var(--btn-outline);
+        border-color: var(--btn-outline);
+    }
+
+    #editGoalBtn:hover {
+        color: var(--btn-outline-hover);
+        background-color: var(--btn-outline);
+    }
+
+    .table-active {
+        --bs-table-bg: var(--card-header-bg);
+        --bs-table-color: var(--card-text);
+    }
+
+    .quantity-input {
+        background-color: var(--card-bg);
+        color: var(--card-text);
+        border-color: var(--card-border);
+    }
+</style>
+
 {% endblock %}
 
 {% block script %}
@@ -313,7 +422,7 @@
                             data, 
                             backgroundColor: [gradientFat, gradientCarbs, gradientProtein],
                             borderWidth: 2,
-                            borderColor: '#2C3E50',
+                            borderColor: window.matchMedia('(prefers-color-scheme: dark)').matches ? '#4a5568' : '#dee2e6',
                             hoverBorderWidth: 3,
                             hoverOffset: 10
                         }],
@@ -325,7 +434,7 @@
                             legend: { display: false },
                             tooltip: {
                                 enabled: true,
-                                backgroundColor: 'rgba(0,0,0,0.8)',
+                                backgroundColor: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'rgba(0,0,0,0.9)' : 'rgba(0,0,0,0.8)',
                                 titleFont: { size: 14, weight: 'bold' },
                                 bodyFont: { size: 12 },
                                 callbacks: {
@@ -359,6 +468,14 @@
                             }
                         }
                     }
+                });
+
+                // Listen for color scheme changes
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+                    const newColorScheme = event.matches ? "dark" : "light";
+                    pieChart.options.plugins.tooltip.backgroundColor = newColorScheme === 'dark' ? 'rgba(0,0,0,0.9)' : 'rgba(0,0,0,0.8)';
+                    pieChart.data.datasets[0].borderColor = newColorScheme === 'dark' ? '#4a5568' : '#dee2e6';
+                    pieChart.update();
                 });
             }
         };

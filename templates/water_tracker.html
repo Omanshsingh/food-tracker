@@ -4,17 +4,17 @@
 {% block title %}Water Tracker | Daily Intake{% endblock %}
 
 {% block body %}
-<div class='py-4 mt-auto water-tracker-container'>
+<div class='py-4 mt-auto'>
     <div class='container-fluid px-4'>
         <div class='row justify-content-center'>
             <div class='col-xl-12'>
                 <div class='row'>
                     <!-- Left Column - Water Tracking -->
                     <div class='col-md-6 mt-4'>
-                        <div class='card bg-secondary mb-3 water-card'>
-                            <div class='card-header water-card-header d-flex justify-content-between align-items-center'>
-                                <h5>Today's Water Intake</h5>
-                                <h5><strong class='date-badge'>{{ today|date:"D, jS F Y" }}</strong></h5>
+                        <div class='card mb-3 shadow-lg water-card'>
+                            <div class='card-header d-flex justify-content-between align-items-center water-card-header'>
+                                <h5 class='mb-0'>Today's Water Intake</h5>
+                                <h5 class='mb-0'><strong class='date-badge'>{{ today|date:"D, jS F Y" }}</strong></h5>
                             </div>
                             <div class='card-body'>
                                 <!-- Water Status -->
@@ -52,12 +52,12 @@
                                      aria-valuenow='{{ water_intake.glasses }}'
                                      aria-valuemin='0'
                                      aria-valuemax='{{ water_goal.daily_goal }}'>
-                                    <div class='progress-bar progress-bar-striped 
+                                    <div class='progress-bar progress-bar-striped progress-bar-animated
                                         {% if progress >= 100 %}bg-success
                                         {% elif progress >= 75 %}bg-info
                                         {% elif progress > 0 %}bg-warning
                                         {% else %}bg-danger{% endif %}' 
-                                        style='width: {{ progress }}%; transition: width 0.5s ease-in-out;'>
+                                        style='width: {{ progress }}%;'>
                                         {{ water_intake.glasses }}/{{ water_goal.daily_goal }} glasses
                                     </div>
                                 </div>
@@ -67,7 +67,7 @@
                                     <form method="post" action="{% url 'log_water' %}" class="d-inline">
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="remove">
-                                        <button type="submit" class='btn btn-danger btn-sm btn-water-remove' 
+                                        <button type="submit" class='btn btn-danger btn-sm' 
                                                 {% if water_intake.glasses == 0 %}disabled{% endif %}
                                                 aria-label="Remove one glass of water">
                                             <i class='fas fa-minus' aria-hidden="true"></i> Remove
@@ -82,7 +82,7 @@
                                     <form method="post" action="{% url 'log_water' %}" class="d-inline">
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="add">
-                                        <button type="submit" class='btn btn-success btn-sm btn-water-add'
+                                        <button type="submit" class='btn btn-success btn-sm'
                                                 aria-label="Add one glass of water">
                                             <i class='fas fa-plus' aria-hidden="true"></i> Add
                                         </button>
@@ -92,29 +92,29 @@
                         </div>
                         
                         <!-- Recent Water Log -->
-                        <div class='card bg-secondary mb-3 water-card'>
+                        <div class='card mb-3 shadow-lg water-card'>
                             <div class='card-header water-card-header'>
-                                <h5>Recent Water Intake</h5>
+                                <h5 class='mb-0'>Recent Water Intake</h5>
                             </div>
-                            <div class='card-body'>
+                            <div class='card-body p-0'>
                                 {% if water_history %}
                                     <div class="table-responsive">
-                                        <table class='table table-hover' aria-label="Recent water intake history">
+                                        <table class='table table-hover mb-0' aria-label="Recent water intake history">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">Date</th>
-                                                    <th scope="col">Glasses</th>
-                                                    <th scope="col">Goal</th>
-                                                    <th scope="col">Status</th>
+                                                    <th class='ps-3'>Date</th>
+                                                    <th>Glasses</th>
+                                                    <th>Goal</th>
+                                                    <th class='pe-3'>Status</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {% for entry in water_history|slice:":5" %}
                                                     <tr>
-                                                        <td>{{ entry.date|date:"M j" }}</td>
+                                                        <td class='ps-3'>{{ entry.date|date:"M j" }}</td>
                                                         <td>{{ entry.glasses }}</td>
                                                         <td>{{ water_goal.daily_goal }}</td>
-                                                        <td>
+                                                        <td class='pe-3'>
                                                             {% if entry.glasses >= water_goal.daily_goal %}
                                                                 <span class='badge bg-success'>Met Goal</span>
                                                             {% else %}
@@ -127,14 +127,16 @@
                                         </table>
                                     </div>
                                 {% else %}
-                                    <div class="empty-state">
-                                        <i class="fas fa-tint-slash"></i>
-                                        <p>No water intake history yet.</p>
+                                    <div class="empty-state p-4 text-center">
+                                        <i class="fas fa-tint-slash mb-2"></i>
+                                        <p class='mb-0'>No water intake history yet.</p>
                                     </div>
                                 {% endif %}
-                                <a href="{% url 'water_history' %}" class="btn btn-outline-primary btn-sm mt-2 btn-view-all">
-                                    View Full History
-                                </a>
+                                <div class='p-3'>
+                                    <a href="{% url 'water_history' %}" class="btn btn-outline-primary btn-sm w-100">
+                                        View Full History
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -142,13 +144,13 @@
                     <!-- Right Column - Charts and Settings -->
                     <div class='col-md-6 mt-4'>
                         <!-- Weekly Progress Chart -->
-                        <div class='card bg-secondary mb-3 water-card'>
+                        <div class='card mb-3 shadow-lg water-card'>
                             <div class='card-header water-card-header'>
-                                <h5>Weekly Progress</h5>
+                                <h5 class='mb-0'>Weekly Progress</h5>
                             </div>
                             <div class='card-body'>
-                                <div class="chart-container">
-                                    <canvas id="weeklyWaterChart" height="250" aria-label="Weekly water intake chart"></canvas>
+                                <div class="chart-container" style="position: relative; height: 250px;">
+                                    <canvas id="weeklyWaterChart" aria-label="Weekly water intake chart"></canvas>
                                 </div>
                                 <!-- Hidden element to pass data to JavaScript -->
                                 <div id="chartData" 
@@ -160,38 +162,42 @@
                         </div>
                         
                         <!-- Water Goal Settings -->
-                        <div class='card bg-secondary water-card'>
+                        <div class='card mb-3 shadow-lg water-card'>
                             <div class='card-header water-card-header d-flex justify-content-between align-items-center'>
-                                <h5>Water Goal Settings</h5>
-                                <a href="{% url 'water_settings' %}" class="btn btn-sm btn-outline-light btn-edit"
+                                <h5 class='mb-0'>Water Goal Settings</h5>
+                                <a href="{% url 'water_settings' %}" class="btn btn-sm btn-outline-secondary"
                                    aria-label="Edit water goal settings">
                                     <i class="fas fa-cog" aria-hidden="true"></i> Edit
                                 </a>
                             </div>
                             <div class='card-body'>
-                                <div class="settings-grid">
-                                    <div class="setting-item">
-                                        <div class="setting-icon" style="background: #3a7bd5;">
-                                            <i class="fas fa-tint" aria-hidden="true"></i>
-                                        </div>
-                                        <div class="setting-info">
-                                            <h6>Daily Goal</h6>
-                                            <p>{{ water_goal.daily_goal }} glasses</p>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <i class="fas fa-tint fa-2x text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class='mb-1'>Daily Goal</h6>
+                                                <p class='mb-0'>{{ water_goal.daily_goal }} glasses</p>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="setting-item">
-                                        <div class="setting-icon" style="background: #00d2ff;">
-                                            <i class="fas fa-bell" aria-hidden="true"></i>
-                                        </div>
-                                        <div class="setting-info">
-                                            <h6>Reminder</h6>
-                                            <p>
-                                                {% if water_goal.reminder_enabled %}
-                                                    Enabled ({{ water_goal.reminder_interval }} hours)
-                                                {% else %}
-                                                    Disabled
-                                                {% endif %}
-                                            </p>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <i class="fas fa-bell fa-2x text-info"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class='mb-1'>Reminder</h6>
+                                                <p class='mb-0'>
+                                                    {% if water_goal.reminder_enabled %}
+                                                        Enabled ({{ water_goal.reminder_interval }}h)
+                                                    {% else %}
+                                                        Disabled
+                                                    {% endif %}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -205,215 +211,131 @@
 </div>
 
 <style>
-    /* Modern Water Tracker Styles */
-    .water-tracker-container {
-        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-        min-height: 100vh;
+    /* Light mode colors */
+    :root {
+        --card-bg-light: #ffffff;
+        --card-header-bg-light: #f8f9fa;
+        --card-text-light: #212529;
+        --card-border-light: rgba(0, 0, 0, 0.125);
+        --table-head-bg-light: #e9ecef;
+        --table-head-text-light: #212529;
+        --table-border-light: #dee2e6;
+        --btn-outline-light: #6c757d;
+        --btn-outline-hover-light: #f8f9fa;
+        --date-color-light: #0d6efd;
     }
-    
+
+    /* Dark mode colors */
+    :root {
+        --card-bg-dark: #2d3748;
+        --card-header-bg-dark: #1a202c;
+        --card-text-dark: #f7fafc;
+        --card-border-dark: #4a5568;
+        --table-head-bg-dark: #4a5568;
+        --table-head-text-dark: #f7fafc;
+        --table-border-dark: #4a5568;
+        --btn-outline-dark: #f7fafc;
+        --btn-outline-hover-dark: #1a202c;
+        --date-color-dark: #63b3ed;
+    }
+
+    /* Apply light mode by default */
+    body {
+        --card-bg: var(--card-bg-light);
+        --card-header-bg: var(--card-header-bg-light);
+        --card-text: var(--card-text-light);
+        --card-border: var(--card-border-light);
+        --table-head-bg: var(--table-head-bg-light);
+        --table-head-text: var(--table-head-text-light);
+        --table-border: var(--table-border-light);
+        --btn-outline: var(--btn-outline-light);
+        --btn-outline-hover: var(--btn-outline-hover-light);
+        --date-color: var(--date-color-light);
+    }
+
+    /* Apply dark mode if preferred */
+    @media (prefers-color-scheme: dark) {
+        body {
+            --card-bg: var(--card-bg-dark);
+            --card-header-bg: var(--card-header-bg-dark);
+            --card-text: var(--card-text-dark);
+            --card-border: var(--card-border-dark);
+            --table-head-bg: var(--table-head-bg-dark);
+            --table-head-text: var(--table-head-text-dark);
+            --table-border: var(--table-border-dark);
+            --btn-outline: var(--btn-outline-dark);
+            --btn-outline-hover: var(--btn-outline-hover-dark);
+            --date-color: var(--date-color-dark);
+        }
+    }
+
+    /* Apply the variables */
     .water-card {
-        border: none;
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-        transition: transform 0.3s ease;
+        background-color: var(--card-bg);
+        border-color: var(--card-border);
+        color: var(--card-text);
     }
-    
-    .water-card:hover {
-        transform: translateY(-5px);
-    }
-    
+
     .water-card-header {
-        background: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%);
-        color: white;
-        padding: 1.25rem 1.5rem;
-        border-bottom: none;
+        background-color: var(--card-header-bg) !important;
+        color: var(--card-text) !important;
+        border-bottom-color: var(--card-border) !important;
     }
-    
+
     .date-badge {
-        background: rgba(255,255,255,0.2);
-        padding: 0.35rem 0.75rem;
+        color: var(--date-color) !important;
+        background-color: rgba(var(--date-color), 0.1);
+        padding: 0.25rem 0.75rem;
         border-radius: 50px;
         font-size: 0.85rem;
     }
-    
-    /* Water Controls */
+
     .water-controls {
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-top: 2rem;
+        margin-top: 1.5rem;
     }
-    
-    .btn-water-add, .btn-water-remove {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        border: none;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
-    }
-    
-    .btn-water-add {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        color: white;
-    }
-    
-    .btn-water-remove {
-        background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
-        color: white;
-    }
-    
-    .btn-water-add:hover, .btn-water-remove:hover {
-        transform: scale(1.1);
-        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-    }
-    
+
     .water-counter {
         text-align: center;
         min-width: 80px;
     }
-    
+
     .water-counter span {
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: 700;
-        color: #1e3a8a;
+        color: var(--date-color);
         display: block;
         line-height: 1;
     }
-    
+
     .water-counter small {
         font-size: 0.8rem;
-        color: #64748b;
+        color: var(--card-text);
+        opacity: 0.7;
     }
-    
-    /* History Section */
-    .table-hover tbody tr:hover {
-        background-color: rgba(0,0,0,0.05);
-    }
-    
-    /* Empty State */
+
     .empty-state {
-        text-align: center;
-        padding: 2rem 0;
-        color: #94a3b8;
+        color: var(--card-text);
+        opacity: 0.7;
     }
-    
-    .empty-state i {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        opacity: 0.5;
+
+    /* Table styles */
+    .table {
+        --bs-table-color: var(--card-text);
+        --bs-table-border-color: var(--table-border);
     }
-    
-    /* Chart Section */
-    .chart-container {
-        position: relative;
-        height: 250px;
-        width: 100%;
+
+    .table thead th {
+        background-color: var(--table-head-bg) !important;
+        color: var(--table-head-text) !important;
     }
-    
-    /* Settings Grid */
-    .settings-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-    }
-    
-    .setting-item {
-        display: flex;
-        align-items: center;
-        background: rgba(241, 245, 249, 0.5);
-        padding: 1rem;
-        border-radius: 10px;
-    }
-    
-    .setting-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 1rem;
-        color: white;
-    }
-    
-    .setting-info h6 {
-        font-size: 0.85rem;
-        color: #64748b;
-        margin-bottom: 0.25rem;
-    }
-    
-    .setting-info p {
-        font-weight: 600;
-        margin-bottom: 0;
-    }
-    
-    /* Buttons */
-    .btn-view-all, .btn-edit {
-        background: rgba(255,255,255,0.2);
-        color: white;
-        border: none;
-        border-radius: 50px;
-        padding: 0.25rem 0.75rem;
-        font-size: 0.8rem;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-view-all:hover, .btn-edit:hover {
-        background: rgba(255,255,255,0.3);
-        transform: translateX(3px);
-    }
-    
-    /* Dark Mode Support */
-    body.dark-mode .water-tracker-container {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    }
-    
-    body.dark-mode .water-card-header {
-        background: linear-gradient(135deg, #1e40af 0%, #0369a1 100%);
-    }
-    
-    body.dark-mode .water-counter span {
-        color: #bfdbfe;
-    }
-    
-    body.dark-mode .empty-state {
-        color: #64748b;
-    }
-    
-    body.dark-mode .setting-item {
-        background: rgba(30, 41, 59, 0.5);
-    }
-    
-    body.dark-mode .setting-info h6 {
-        color: #94a3b8;
-    }
-    
-    body.dark-mode .setting-info p {
-        color: #e2e8f0;
-    }
-    
-    /* Responsive Adjustments */
-    @media (max-width: 992px) {
-        .settings-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-    
+
+    /* Responsive adjustments */
     @media (max-width: 768px) {
         .water-counter span {
-            font-size: 2rem;
-        }
-        
-        .btn-water-add, .btn-water-remove {
-            width: 40px;
-            height: 40px;
-            font-size: 1rem;
+            font-size: 1.75rem;
         }
     }
 </style>
@@ -449,8 +371,8 @@
                         {
                             label: 'Glasses Consumed',
                             data: intakeData,
-                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: '#0d6efd',
+                            borderColor: '#0b5ed7',
                             borderWidth: 1,
                             borderRadius: 5
                         },
@@ -458,7 +380,7 @@
                             label: 'Daily Goal',
                             data: Array(labels.length).fill(goalValue),
                             type: 'line',
-                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderColor: '#dc3545',
                             borderWidth: 2,
                             borderDash: [5, 5],
                             pointRadius: 0,
@@ -474,15 +396,23 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Glasses of Water'
+                                text: 'Glasses of Water',
+                                color: window.matchMedia('(prefers-color-scheme: dark)').matches ? '#f8f9fa' : '#212529'
                             },
                             ticks: {
-                                stepSize: 1
+                                stepSize: 1,
+                                color: window.matchMedia('(prefers-color-scheme: dark)').matches ? '#f8f9fa' : '#212529'
+                            },
+                            grid: {
+                                color: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
                             }
                         },
                         x: {
                             grid: {
                                 display: false
+                            },
+                            ticks: {
+                                color: window.matchMedia('(prefers-color-scheme: dark)').matches ? '#f8f9fa' : '#212529'
                             }
                         }
                     },
@@ -490,11 +420,15 @@
                         legend: {
                             position: 'top',
                             labels: {
+                                color: window.matchMedia('(prefers-color-scheme: dark)').matches ? '#f8f9fa' : '#212529',
                                 usePointStyle: true,
                                 pointStyle: 'circle'
                             }
                         },
                         tooltip: {
+                            backgroundColor: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'rgba(0,0,0,0.9)' : 'rgba(0,0,0,0.8)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
                             callbacks: {
                                 label: function(context) {
                                     let label = context.dataset.label || '';
@@ -510,6 +444,21 @@
                         }
                     }
                 }
+            });
+
+            // Listen for color scheme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+                const isDarkMode = event.matches;
+                
+                // Update chart colors
+                weeklyChart.options.scales.y.title.color = isDarkMode ? '#f8f9fa' : '#212529';
+                weeklyChart.options.scales.y.ticks.color = isDarkMode ? '#f8f9fa' : '#212529';
+                weeklyChart.options.scales.y.grid.color = isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                weeklyChart.options.scales.x.ticks.color = isDarkMode ? '#f8f9fa' : '#212529';
+                weeklyChart.options.plugins.legend.labels.color = isDarkMode ? '#f8f9fa' : '#212529';
+                weeklyChart.options.plugins.tooltip.backgroundColor = isDarkMode ? 'rgba(0,0,0,0.9)' : 'rgba(0,0,0,0.8)';
+                
+                weeklyChart.update();
             });
         });
     </script>

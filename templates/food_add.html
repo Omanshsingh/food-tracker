@@ -8,12 +8,12 @@
         {% if success %}
             <div class='alert alert-dismissible alert-success' role='alert'>
                 <button type='button' class='btn-close' data-bs-dismiss='alert'></button>
-                The new food item was added successfully.
+                🎉 The new food item was added successfully!
             </div>
         {% else %}
             <div class='text-center mb-4'>
-                <h3>Add Food Item</h3>
-                <p class='text-muted'>Enter the details of a new food item</p>
+                <h3>🍏 Add Food Item</h3>
+                <p class='text-muted'>📝 Enter the details of a new food item</p>
             </div>
             
             <div class='row justify-content-center'>
@@ -24,73 +24,67 @@
                                 {% csrf_token %}
                                 
                                 <div class='mb-4'>
-                                    <h5 class='mb-3'>Basic Information</h5>
+                                    <h5 class='mb-3'>📋 Basic Information</h5>
                                     
                                     <div class='mb-3'>
-                                        <label for="{{ food_form.food_name.id_for_label }}" class='form-label'>Food Name</label>
+                                        <label for="{{ food_form.food_name.id_for_label }}" class='form-label'>🍴 Food Name</label>
                                         {{ food_form.food_name }}
                                     </div>
                                     
                                     <div class='row'>
                                         <div class='col-md-6 mb-3'>
-                                            <label for="{{ food_form.category.id_for_label }}" class='form-label'>Category</label>
+                                            <label for="{{ food_form.category.id_for_label }}" class='form-label'>🏷️ Category</label>
                                             {{ food_form.category }}
                                         </div>
                                         <div class='col-md-6 mb-3'>
-                                            <label for="{{ food_form.calories.id_for_label }}" class='form-label'>Calories</label>
+                                            <label for="{{ food_form.calories.id_for_label }}" class='form-label'>🔥 Calories</label>
                                             {{ food_form.calories }}
                                         </div>
                                     </div>
                                     
                                     <div class='row'>
                                         <div class='col-md-4 mb-3'>
-                                            <label for="{{ food_form.fat.id_for_label }}" class='form-label'>Fat (g)</label>
+                                            <label for="{{ food_form.fat.id_for_label }}" class='form-label'>🧈 Fat (g)</label>
                                             {{ food_form.fat }}
                                         </div>
                                         <div class='col-md-4 mb-3'>
-                                            <label for="{{ food_form.carbohydrates.id_for_label }}" class='form-label'>Carbs (g)</label>
+                                            <label for="{{ food_form.carbohydrates.id_for_label }}" class='form-label'>🍞 Carbs (g)</label>
                                             {{ food_form.carbohydrates }}
                                         </div>
                                         <div class='col-md-4 mb-3'>
-                                            <label for="{{ food_form.protein.id_for_label }}" class='form-label'>Protein (g)</label>
+                                            <label for="{{ food_form.protein.id_for_label }}" class='form-label'>🍗 Protein (g)</label>
                                             {{ food_form.protein }}
                                         </div>
                                     </div>
                                     
                                     <div class='mb-3'>
-                                        <label for="{{ food_form.quantity.id_for_label }}" class='form-label'>Quantity (grams)</label>
+                                        <label for="{{ food_form.quantity.id_for_label }}" class='form-label'>⚖️ Quantity (grams)</label>
                                         {{ food_form.quantity }}
                                     </div>
                                 </div>
                                 
                                 <!-- Image Upload Field -->
                                 <div class='mb-4'>
-                                    <h5 class='mb-3'>Food Image</h5>
+                                    <h5 class='mb-3'>📸 Food Image</h5>
                                     {{ image_form.management_form }}
                                     {% for form in image_form %}
                                         {{ form.as_p }}
                                     {% endfor %}
-                                    <small class='text-muted'>Recommended size: 800x600px</small>
+                                    <small class='text-muted'>✨ Recommended size: 800x600px</small>
                                 </div>
                                 
                                 <div class='mb-4'>
-                                    <h5 class='mb-3'>Additional Details</h5>
+                                    <h5 class='mb-3'>📝 Additional Details</h5>
                                     <div class='form-group mb-3'>
-                                        <label for="{{ food_form.description.id_for_label }}" class='form-label'>Description</label>
+                                        <label for="{{ food_form.description.id_for_label }}" class='form-label'>✏️ Description</label>
                                         {{ food_form.description }}
-                                        <small class='text-muted'>Brief description of the food item</small>
-                                    </div>
-                                    <div class='form-group'>
-                                        <label for="insights" class='form-label'>Insights</label>
-                                        <textarea class='form-control' id="insights" name="insights" rows='3' 
-                                            placeholder='Share your personal insights about this food (nutritional benefits, best time to consume, pairing suggestions, etc.)'></textarea>
-                                        <small class='text-muted'>Your personal observations or tips about this food</small>
+                                        <small class='text-muted'>💬 Brief description of the food item</small>
                                     </div>
                                 </div>
                                 
                                 <div class='d-grid gap-2 d-md-flex justify-content-md-end mt-4'>
-                                    <a href="{% url 'index' %}" class='btn btn-outline-secondary me-md-2'>Cancel</a>
-                                    <button type='submit' class='btn btn-primary'>Save Food Item</button>
+                                    <a href="{% url 'index' %}" class='btn btn-outline-secondary me-md-2'>❌ Cancel</a>
+                                    <button type='submit' class='btn btn-primary'>💾 Save Food Item</button>
                                 </div>
                             </form>
                         </div>

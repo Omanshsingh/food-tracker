@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Water Tracker | History{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Light mode colors */
+    :root {
+        --card-bg-light: #ffffff;
+        --card-header-bg-light: #f8f9fa;
+        --card-text-light: #212529;
+        --card-border-light: rgba(0, 0, 0, 0.125);
+        --table-head-bg-light: #e9ecef;
+        --table-head-text-light: #212529;
+        --table-border-light: #dee2e6;
+        --btn-outline-light: #6c757d;
+        --btn-outline-hover-light: #f8f9fa;
+        --date-color-light: #0d6efd;
+    }
+
+    /* Dark mode colors */
+    :root {
+        --card-bg-dark: #2d3748;
+        --card-header-bg-dark: #1a202c;
+        --card-text-dark: #f7fafc;
+        --card-border-dark: #4a5568;
+        --table-head-bg-dark: #4a5568;
+        --table-head-text-dark: #f7fafc;
+        --table-border-dark: #4a5568;
+        --btn-outline-dark: #f7fafc;
+        --btn-outline-hover-dark: #1a202c;
+        --date-color-dark: #63b3ed;
+    }
+
+    /* Apply light mode by default */
+    body {
+        --card-bg: var(--card-bg-light);
+        --card-header-bg: var(--card-header-bg-light);
+        --card-text: var(--card-text-light);
+        --card-border: var(--card-border-light);
+        --table-head-bg: var(--table-head-bg-light);
+        --table-head-text: var(--table-head-text-light);
+        --table-border: var(--table-border-light);
+        --btn-outline: var(--btn-outline-light);
+        --btn-outline-hover: var(--btn-outline-hover-light);
+        --date-color: var(--date-color-light);
+    }
+
+    /* Apply dark mode if preferred */
+    @media (prefers-color-scheme: dark) {
+        body {
+            --card-bg: var(--card-bg-dark);
+            --card-header-bg: var(--card-header-bg-dark);
+            --card-text: var(--card-text-dark);
+            --card-border: var(--card-border-dark);
+            --table-head-bg: var(--table-head-bg-dark);
+            --table-head-text: var(--table-head-text-dark);
+            --table-border: var(--table-border-dark);
+            --btn-outline: var(--btn-outline-dark);
+            --btn-outline-hover: var(--btn-outline-hover-dark);
+            --date-color: var(--date-color-dark);
+        }
+    }
+
+    /* Apply the variables */
+    .water-card {
+        background-color: var(--card-bg);
+        border-color: var(--card-border);
+        color: var(--card-text);
+        margin-bottom: 30px; /* Consistent spacing */
+    }
+
+    .water-card-header {
+        background-color: var(--card-header-bg) !important;
+        color: var(--card-text) !important;
+        border-bottom-color: var(--card-border) !important;
+    }
+
+    .empty-state {
+        color: var(--card-text);
+        opacity: 0.7;
+    }
+
+    /* Table styles */
+    .table {
+        --bs-table-color: var(--card-text);
+        --bs-table-border-color: var(--table-border);
+    }
+
+    .table thead th {
+        background-color: var(--table-head-bg) !important;
+        color: var(--table-head-text) !important;
+    }
+
+    /* Chart container */
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class='py-5 mt-auto'>
+    <div class='container-fluid px-4'>
+        <div class='row justify-content-center'>
+            <div class='col-xl-12'>
+                <div class='row'>
+                    <!-- Left Column - Full Water History Table -->
+                    <div class='col-md-6 mt-5'>
+                        <div class='card shadow-lg water-card'>
+                            <div class='card-header water-card-header'>
+                                <h5 class='mb-0'>Water Intake History</h5>
+                            </div>
+                            <div class='card-body p-0'>
+                                {% if water_history %}
+                                    <div class="table-responsive">
+                                        <table class='table table-hover mb-0' aria-label="Full water intake history">
+                                            <thead>
+                                                <tr>
+                                                    <th class='ps-3'>Date</th>
+                                                    <th>Glasses</th>
+                                                    <th>Goal</th>
+                                                    <th class='pe-3'>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for entry in water_history %}
+                                                    <tr>
+                                                        <td class='ps-3'>{{ entry.date|date:"M j, Y" }}</td>
+                                                        <td>{{ entry.glasses }}</td>
+                                                        <td>{{ water_goal.daily_goal }}</td>
+                                                        <td class='pe-3'>
+                                                            {% if entry.glasses >= water_goal.daily_goal %}
+                                                                <span class='badge bg-success'>Met Goal</span>
+                                                            {% else %}
+                                                                <span class='badge bg-warning'>Incomplete</span>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <div class="empty-state p-4 text-center">
+                                        <i class="fas fa-tint-slash mb-2"></i>
+                                        <p class='mb-0'>No water intake history yet.</p>
+                                    </div>
+                                {% endif %}
+                                <div class='p-3'>
+                                    <a href="{% url 'water_tracker' %}" class="btn btn-outline-primary btn-sm w-100">
+                                        Back to Tracker
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Water Intake Chart -->
+                    <div class='col-md-6 mt-5'>
+                        <div class='card shadow-lg water-card'>
+                            <div class='card-header water-card-header'>
+                                <h5 class='mb-0'>Water Intake Over Time</h5>
+                            </div>
+                            <div class='card-body'>
+                                <div class="chart-container">
+                                    <canvas id="waterHistoryChart" aria-label="Water intake history chart"></canvas>
+                                </div>
+                                <!-- Hidden element to pass data to JavaScript -->
+                                <div id="chartData" 
+                                     data-labels="{% for entry in water_history %}{{ entry.date|date:'M j' }}{% if not forloop.last %},{% endif %}{% endfor %}"
+                                     data-intake="{% for entry in water_history %}{{ entry.glasses }}{% if not forloop.last %},{% endif %}{% endfor %}"
+                                     data-goal="{{ water_goal.daily_goal }}"
+                                     style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+    {{ block.super }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the chart data from the hidden element
+            const chartData = document.getElementById('chartData');
+            const ctx = document.getElementById('waterHistoryChart').getContext('2d');
+            
+            // Error handling for missing data
+            if (!chartData || !chartData.dataset.labels || !chartData.dataset.intake || !chartData.dataset.goal) {
+                console.error("Missing or invalid chart data");
+                ctx.canvas.parentNode.innerHTML = "<p class='text-muted text-center'>Chart data unavailable</p>";
+                return;
+            }
+
+            // Parse the data
+            const labels = chartData.dataset.labels.split(',').reverse();
+            const intakeData = chartData.dataset.intake.split(',').map(Number).reverse();
+            const goalValue = parseFloat(chartData.dataset.goal);
+            
+            // Create the chart
+            const historyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Glasses Consumed',
+                            data: intakeData,
+                            backgroundColor: 'rgba(13, 110, 253, 0.2)',
+                            borderColor: '#0d6efd',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#0d6efd',
+                            pointRadius: 4,
+                            tension: 0.1,
+                            fill: true
+                        },
+                        {
+                            label: 'Daily Goal',
+                            data: Array(labels.length).fill(goalValue),
+                            borderColor: '#dc3545',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Glasses of Water',
+                                color: window.matchMedia('(prefers-color-scheme: dark)').matches ? '#f8f9fa' : '#212529'
+                            },
+                            ticks: {
+                                stepSize: 1,
+                                color: window.matchMedia('(prefers-color-scheme: dark)').matches ? '#f8f9fa' : '#212529'
+                            },
+                            grid: {
+                                color: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: window.matchMedia('(prefers-color-scheme: dark)').matches ? '#f8f9fa' : '#212529'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: window.matchMedia('(prefers-color-scheme: dark)').matches ? '#f8f9fa' : '#212529',
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'rgba(0,0,0,0.9)' : 'rgba(0,0,0,0.8)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y + ' glass' + (context.parsed.y !== 1 ? 'es' : '');
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Listen for color scheme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+                const isDarkMode = event.matches;
+                
+                // Update chart colors
+                historyChart.options.scales.y.title.color = isDarkMode ? '#f8f9fa' : '#212529';
+                historyChart.options.scales.y.ticks.color = isDarkMode ? '#f8f9fa' : '#212529';
+                historyChart.options.scales.y.grid.color = isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                historyChart.options.scales.x.ticks.color = isDarkMode ? '#f8f9fa' : '#212529';
+                historyChart.options.plugins.legend.labels.color = isDarkMode ? '#f8f9fa' : '#212529';
+                historyChart.options.plugins.tooltip.backgroundColor = isDarkMode ? 'rgba(0,0,0,0.9)' : 'rgba(0,0,0,0.8)';
+                
+                historyChart.update();
+            });
+        });
+    </script>
+{% endblock %}

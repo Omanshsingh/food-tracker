@@ -2,172 +2,324 @@
 
 {% load static %}
 
-{% block title %}Food Tracker | Food Log{% endblock %}
+{% block title %}Food Tracker | User Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Profile Page Specific Styles */
+    .profile-container {
+        padding-bottom: 40px;
+    }
+    
+    .profile-card {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        transition: transform 0.3s ease;
+    }
+    
+    .profile-card:hover {
+        transform: translateY(-3px);
+    }
+    
+    .profile-card .card-header {
+        border-radius: 10px 10px 0 0 !important;
+        background-color: #f8f9fa;
+        border-bottom: none;
+        font-weight: 600;
+        padding: 1rem 1.25rem;
+    }
+    
+    .profile-info-item {
+        padding: 0.75rem 1.25rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .profile-info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .weight-form .form-control {
+        border-radius: 5px;
+    }
+    
+    .weight-table {
+        margin-bottom: 0;
+    }
+    
+    .weight-table th {
+        font-weight: 600;
+        border-bottom-width: 1px;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    
+    /* Dark Mode Styles */
+    @media (prefers-color-scheme: dark) {
+        .profile-card {
+            background-color: #2d3748;
+        }
+        
+        .profile-card .card-header {
+            background-color: #1a202c !important;
+            color: #f8f9fa !important;
+        }
+        
+        .profile-info-item {
+            border-bottom-color: #4a5568;
+            color: #f8f9fa;
+        }
+        
+        .weight-table {
+            color: #f8f9fa;
+        }
+        
+        .weight-table th {
+            background-color: #4a5568;
+            color: #f8f9fa;
+        }
+        
+        .form-control {
+            background-color: #2d3748;
+            color: #f8f9fa;
+            border-color: #4a5568;
+        }
+        
+        .form-control:focus {
+            background-color: #2d3748;
+            color: #f8f9fa;
+            border-color: #4a5568;
+            box-shadow: 0 0 0 0.25rem rgba(26, 32, 44, 0.25);
+        }
+    }
+</style>
+{% endblock %}
 
 {% block body %}
-<div class='py-4 mt-auto'>
+<div class='py-5 mt-auto profile-container'>
     <div class='container-fluid px-4'>
-
         <div class='row justify-content-center'>
             <div class='col-xl-12'>
-                
-                    <div class='row'>
-                        <div class='col-md-6 mt-4'>
-
-                            <div class='card bg-secondary mb-3'>
-                                <div class='card-header'>
-                                    <h4>Hi, <strong>{{ user.username }}</strong>!</h4>
+                <div class='row'>
+                    <!-- Left Column -->
+                    <div class='col-md-6 mt-5'>
+                        <!-- User Info Card -->
+                        <div class='card profile-card'>
+                            <div class='card-header'>
+                                <h4 class='mb-0'>Hi, <strong>{{ user.username }}</strong>!</h4>
+                            </div>
+                            <div class='card-body p-0'>
+                                <div class='profile-info-item'>
+                                    <p class='mb-0'>
+                                        <strong>Username:</strong> {{ user.username }}
+                                    </p>
                                 </div>
-                                <div class='card-body'>
-
-                                    <div class='d-flex w-100 justify-content-between'>
-                                        <p class='mb-1'>
-                                            Username: <strong>{{ user.username }}</strong>
-                                        </p>
-                                    </div>
-
-                                    <div class='d-flex w-100 justify-content-between'>
-                                        <p class='mb-1'>
-                                            Email: <strong>{{ user.email }}</strong>
-                                        </p>
-                                    </div>
-
-                                    <div class='d-flex w-100 justify-content-between'>
-                                        <p class='mb-1'>
-                                            Date joined: <strong>{{ user.date_joined }}</strong>
-                                        </p>
-                                    </div>
-
-                                    <div class='d-flex w-100 justify-content-between'>
-                                        <p class='mb-1'>
-                                            Last login: <strong>{{ user.last_login }}</strong>
-                                        </p>
-                                    </div>
-
+                                <div class='profile-info-item'>
+                                    <p class='mb-0'>
+                                        <strong>Email:</strong> {{ user.email }}
+                                    </p>
+                                </div>
+                                <div class='profile-info-item'>
+                                    <p class='mb-0'>
+                                        <strong>Date joined:</strong> {{ user.date_joined|date:"M d, Y" }}
+                                    </p>
+                                </div>
+                                <div class='profile-info-item'>
+                                    <p class='mb-0'>
+                                        <strong>Last login:</strong> {{ user.last_login|date:"M d, Y h:i A" }}
+                                    </p>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class='card bg-secondary mb-3'>
-
-                                <div class='card-header'>
-                                    <h4>Record Your Weight</h4>
-                                </div>
-                                <div class='card-body'>
-
-                                <div class='form-group'>
-          
-                                        <form action="{% url 'weight_log' %}" method='POST'>
-                                            {% csrf_token %}
-                                            <div class='form-group'>
-                                                <div class='row'>
-                                                    <div class='col-5'>
-                                                        <label for='date_weight' class='form-label mt-2'>
-                                                            Date
-                                                        </label>
-                                                        <input
-                                                            class='form-control'
-                                                            type='date'
-                                                            name='date' 
-                                                            id='date'
-                                                        >
-                                                    </div>
-                                                    
-                                                    <div class='col-5'>
-                                                        <label for='weight' class='form-label mt-2'>
-                                                            Weight in kg
-                                                        </label>
-                                                        <input 
-                                                            class='form-control'
-                                                            type='number' 
-                                                            name='weight'
-                                                            id='weight'
-                                                            placeholder='0.00' required name='weight' 
-                                                            min='0' 
-                                                            value='0' 
-                                                            step='1' 
-                                                            title='Weight' 
-                                                            pattern='^\d*(\.\d{0,2})?$'
-                                                        >
-                                                    </div>
-                                                    
-                                                    <div class='col-2'>
-                                                        <button type='submit' class='btn btn-primary' style='margin-top:40px;'>
-                                                            Add
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </form>
-
-                                    </div>
-
-                                </div>
+                        <!-- Weight Log Form -->
+                        <div class='card profile-card'>
+                            <div class='card-header'>
+                                <h4 class='mb-0'>Record Your Weight</h4>
                             </div>
+                            <div class='card-body'>
+                                <form action="{% url 'weight_log' %}" method='POST' class='weight-form'>
+                                    {% csrf_token %}
+                                    <div class='row g-3'>
+                                        <div class='col-md-5'>
+                                            <label for='date' class='form-label'>Date</label>
+                                            <input class='form-control' type='date' name='date' id='date' required>
+                                        </div>
+                                        <div class='col-md-5'>
+                                            <label for='weight' class='form-label'>Weight (kg)</label>
+                                            <input class='form-control' type='number' name='weight' id='weight'
+                                                placeholder='0.00' required min='0' step='0.1'
+                                                pattern='^\d*(\.\d{0,2})?$'>
+                                        </div>
+                                        <div class='col-md-2 d-flex align-items-end'>
+                                            <button type='submit' class='btn btn-primary w-100'>
+                                                Add
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
 
-                            <div class='card bg-secondary mb-3'>
-                                <div class='card-header'>
-                                    <h4>Weight Log</h4>
-                                </div>
-                                <div class='card-body'>
-
-                                    <table id='weightable' class='table'>
+                        <!-- Weight Log Table -->
+                        <div class='card profile-card'>
+                            <div class='card-header'>
+                                <h4 class='mb-0'>Weight Log</h4>
+                            </div>
+                            <div class='card-body p-0'>
+                                <div class='table-responsive'>
+                                    <table class='table weight-table'>
                                         <thead>
                                             <tr>
-                                                <th scope='col' class='col-md-4'>Weight in kg</th>
-                                                <th scope='col' class='col-md-4'>Date</th>
-                                                <th scope='col' class='col-md-4'></th>
+                                                <th class='ps-3'>Weight (kg)</th>
+                                                <th>Date</th>
+                                                <th class='pe-3'>Actions</th>
                                             </tr>
                                         </thead>
-                                        
                                         <tbody>
                                             {% for weight_record in user_weight_log %}
                                                 <tr>
-                                                    <td class='col-md-4'>{{ weight_record.weight }}</td>
-                                                    <td class='col-md-4'>{{ weight_record.entry_date|date:'Y-m-d' }}</td>
-                                                    <td class='col-md-4'>
-                                                        <a class='btn btn-success' href="#" style='margin-right:2px;'>
-                                                        <i class='fas fa-edit'></i>
-                                                    </a>
-                                                    <a class='btn btn-danger' href="{% url 'weight_log_delete' weight_record.id %}">
-                                                        <i class='fas fa-trash-alt'></i>
-                                                    </a>
+                                                    <td class='ps-3'>{{ weight_record.weight }}</td>
+                                                    <td>{{ weight_record.entry_date|date:'Y-m-d' }}</td>
+                                                    <td class='pe-3'>
+                                                        <a class='btn btn-sm btn-outline-success' href="#" style='margin-right:5px;'>
+                                                            <i class='fas fa-edit'></i>
+                                                        </a>
+                                                        <a class='btn btn-sm btn-outline-danger' href="{% url 'weight_log_delete' weight_record.id %}">
+                                                            <i class='fas fa-trash-alt'></i>
+                                                        </a>
                                                     </td>
                                                 </tr>
                                             {% endfor %}
                                         </tbody>
                                     </table>
-
-                                </div>
-                            </div>
-                            
-                        </div>
-                        
-                        <div class='col-md-6 mt-4'>
-                            <div class='card bg-secondary mb-3'>
-                                <div class='card-header'>
-                                    <h4>Weight History</h4>
-                                </div>
-                                
-                                <div class='card-body justify-content-center'>
-                                    <div class='chart-bar'>
-                                        <canvas id='myChart'></canvas>
-                                    </div>
                                 </div>
                             </div>
                         </div>
-                        
                     </div>
+                    
+                    <!-- Right Column - Weight Chart -->
+                    <div class='col-md-6 mt-5'>
+                        <div class='card profile-card'>
+                            <div class='card-header'>
+                                <h4 class='mb-0'>Weight History</h4>
+                            </div>
+                            <div class='card-body'>
+                                <div class='chart-container'>
+                                    <canvas id='myChart'></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-
     </div>
-</div>    
+</div>
 {% endblock %}
 
 {% block script %}
-    <!-- Page level plugins -->    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+    {{ block.super }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Initialize chart with dark mode support
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        // Get the data and reverse it to show oldest to newest (left to right)
+        const dates = [
+            {% for record in user_weight_log %}
+                "{{ record.entry_date|date:'M d' }}"{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ].reverse();
+        
+        const weights = [
+            {% for record in user_weight_log %}
+                {{ record.weight }}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ].reverse();
 
-    <!-- Page level custom scripts -->
-    <script src="{% static 'js/userProfile.js' %}"></script>
+        const weightData = {
+            labels: dates,
+            datasets: [{
+                label: 'Weight (kg)',
+                data: weights,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                pointRadius: 4,
+                tension: 0.1
+            }]
+        };
+        
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: weightData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            color: isDarkMode ? '#f8f9fa' : '#212529'
+                        },
+                        grid: {
+                            color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: isDarkMode ? '#f8f9fa' : '#212529'
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: isDarkMode ? '#f8f9fa' : '#212529'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff',
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y + ' kg';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Listen for color scheme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            const isDarkMode = event.matches;
+            
+            // Update chart colors
+            chart.options.scales.y.ticks.color = isDarkMode ? '#f8f9fa' : '#212529';
+            chart.options.scales.y.grid.color = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            chart.options.scales.x.ticks.color = isDarkMode ? '#f8f9fa' : '#212529';
+            chart.options.plugins.legend.labels.color = isDarkMode ? '#f8f9fa' : '#212529';
+            chart.options.plugins.tooltip.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+            
+            chart.update();
+        });
+        
+        // Set today's date as default in date picker
+        document.getElementById('date').valueAsDate = new Date();
+    });
+    </script>
 {% endblock %}
