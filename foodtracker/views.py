@@ -8,6 +8,7 @@ from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.cache import never_cache  # Added for caching fix
 from datetime import datetime, timedelta
 import csv
 import json
@@ -21,6 +22,7 @@ from .forms import FoodForm, ImageForm, WaterIntakeForm, WaterGoalForm
 # ======================
 
 @login_required
+@never_cache  # Added to prevent caching
 def water_tracker_view(request):
     """Main water tracking dashboard"""
     today = timezone.now().date()
@@ -102,45 +104,54 @@ def water_settings_view(request):
         form = WaterGoalForm(request.POST, instance=water_goal)
         if form.is_valid():
             form.save()
+            # Debug print to confirm the save
+            print(f"WaterGoal updated for user {request.user.username}: "
+                  f"daily_goal={water_goal.daily_goal}, "
+                  f"reminder_enabled={water_goal.reminder_enabled}, "
+                  f"reminder_interval={water_goal.reminder_interval}")
             messages.success(request, 'Water settings updated successfully!')
-            return redirect('water_settings')
+            return redirect('water_tracker')  # Updated to redirect to water_tracker
     else:
         form = WaterGoalForm(instance=water_goal)
     
     context = {
         'categories': FoodCategory.objects.all(),
         'form': form,
+        'water_goal': water_goal,  # Added to provide current settings for the template
     }
     return render(request, 'water_settings.html', context)
 
 @login_required
 def water_history_view(request):
     """View historical water intake data"""
-    water_intakes = WaterIntake.objects.filter(user=request.user).order_by('-date')
+    water_goal = request.user.water_goal  # Added to provide water_goal for the template
+    water_history = WaterIntake.objects.filter(user=request.user).order_by('-date')  # Renamed to water_history
     
     # Date filtering
     date_from = request.GET.get('from')
     date_to = request.GET.get('to')
     
     if date_from:
-        water_intakes = water_intakes.filter(date__gte=date_from)
+        water_history = water_history.filter(date__gte=date_from)
     if date_to:
-        water_intakes = water_intakes.filter(date__lte=date_to)
+        water_history = water_history.filter(date__lte=date_to)
     
     # Pagination
-    paginator = Paginator(water_intakes, 10)
+    paginator = Paginator(water_history, 10)
     page = request.GET.get('page')
     
     try:
-        water_intakes = paginator.page(page)
+        water_history_paginated = paginator.page(page)
     except PageNotAnInteger:
-        water_intakes = paginator.page(1)
+        water_history_paginated = paginator.page(1)
     except EmptyPage:
-        water_intakes = paginator.page(paginator.num_pages)
+        water_history_paginated = paginator.page(paginator.num_pages)
     
     context = {
         'categories': FoodCategory.objects.all(),
-        'water_intakes': water_intakes,
+        'water_history': water_history_paginated,  # Updated to water_history
+        'water_goal': water_goal,  # Added for the template
+        'all_water_history': water_history,  # Added for chart data (non-paginated)
     }
     return render(request, 'water_history.html', context)
 
@@ -196,9 +207,6 @@ def get_weekly_water_data(user):
         })
     
     return data
-
-# [Rest of your existing views (authentication, food management, weight tracking, etc.) 
-# remain exactly the same as in your original file]
 
 # ======================
 # AUTHENTICATION VIEWS
