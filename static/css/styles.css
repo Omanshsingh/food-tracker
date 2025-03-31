@@ -113,3 +113,7 @@ footer {
 .bg-info { background-color: #17a2b8 !important; }
 .bg-success { background-color: #28a745 !important; }
 .bg-primary { background-color: #007bff !important; }
+
+.text-muted {
+    color: #adb5bd !important; /* A mid-tone gray visible in both modes */
+}

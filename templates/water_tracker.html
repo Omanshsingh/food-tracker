@@ -339,6 +339,58 @@
             font-size: 1.75rem;
         }
     }
+
+    /* Hydration Notification Styles */
+    .hydration-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        background: var(--card-bg);
+        border-left: 5px solid var(--date-color);
+        border-radius: 5px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        transform: translateX(0);
+        transition: all 0.3s ease;
+        max-width: 350px;
+    }
+
+    .hydration-notification.fade-out {
+        transform: translateX(120%);
+    }
+
+    .hydration-notification-content {
+        padding: 15px;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .hydration-emoji {
+        font-size: 24px;
+        margin-right: 15px;
+    }
+
+    .hydration-notification p {
+        margin: 0;
+        flex: 1;
+        color: var(--card-text);
+    }
+
+    .hydration-notification-close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #999;
+        padding: 0 0 0 10px;
+        line-height: 1;
+    }
+
+    .hydration-notification-close:hover {
+        color: var(--card-text);
+    }
 </style>
 {% endblock %}
 
@@ -347,6 +399,61 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Random hydration messages
+            const hydrationMessages = [
+                "💧 Stay hydrated! Your body will thank you.",
+                "🚰 Did you know? Even mild dehydration can affect your mood and energy levels.",
+                "🌊 Water break time! Take a sip and refresh your mind.",
+                "💦 Your brain is 75% water - keep it fueled!",
+                "🥤 Pro tip: Keep a water bottle nearby to remind yourself to drink.",
+                "🚀 Hydration = Better focus and productivity. Drink up!",
+                "🌱 Plants need water, and so do you! Take a hydration break.",
+                "⏳ It's been a while since your last drink. Time for some H₂O!",
+                "🧠 Dehydration can cause headaches. Stay ahead with regular sips.",
+                "🏆 Every glass counts toward your daily victory!",
+                "🔄 Refresh, recharge, rehydrate!",
+                "🤔 Feeling tired? It might be time for a water break.",
+                "💪 Water helps your muscles work better. Stay strong!",
+                "✨ Clear skin starts from within. Drink water for that glow!",
+                "🧊 Ice-cold or room temp? Whatever gets you drinking!",
+                "📈 You're making progress! Keep those hydration levels up.",
+                "🕒 Set a reminder if you keep forgetting to drink water.",
+                "🌞 Hot day? You'll need even more water than usual.",
+                "🍋 Add some lemon if plain water gets boring.",
+                "🎯 You've got goals to crush - don't let dehydration slow you down!"
+            ];
+            
+            // Show random message
+            const randomMessage = hydrationMessages[Math.floor(Math.random() * hydrationMessages.length)];
+            
+            // Create a notification element
+            const notification = document.createElement('div');
+            notification.className = 'hydration-notification';
+            notification.innerHTML = `
+                <div class="hydration-notification-content">
+                    <span class="hydration-emoji">💧</span>
+                    <p>${randomMessage}</p>
+                    <button class="hydration-notification-close">&times;</button>
+                </div>
+            `;
+            
+            // Add to page after a short delay
+            setTimeout(() => {
+                document.body.appendChild(notification);
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    notification.classList.add('fade-out');
+                    setTimeout(() => notification.remove(), 500);
+                }, 5000);
+                
+                // Close button functionality
+                notification.querySelector('.hydration-notification-close').addEventListener('click', () => {
+                    notification.classList.add('fade-out');
+                    setTimeout(() => notification.remove(), 500);
+                });
+            }, 1000);
+
             // Get the chart data from the hidden element
             const chartData = document.getElementById('chartData');
             const ctx = document.getElementById('weeklyWaterChart').getContext('2d');

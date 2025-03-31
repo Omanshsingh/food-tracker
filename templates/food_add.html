@@ -13,12 +13,12 @@
         {% else %}
             <div class='text-center mb-4'>
                 <h3>🍏 Add Food Item</h3>
-                <p class='text-muted'>📝 Enter the details of a new food item</p>
+                <p style="color: #6B7280;">📝 Enter the details of a new food item</p>
             </div>
             
             <div class='row justify-content-center'>
                 <div class='col-lg-8'>
-                    <div class='card shadow-sm'>
+                    <div class='card shadow-sm food-card'>
                         <div class='card-body'>
                             <form action="{% url 'food_add' %}" method='POST' enctype='multipart/form-data'>
                                 {% csrf_token %}
@@ -94,4 +94,189 @@
         {% endif %}
     </div>
 </div>
+
+<style>
+    /* Light mode colors */
+    :root {
+        --card-bg-light: #ffffff;
+        --card-header-bg-light: #f8f9fa;
+        --card-text-light: #212529;
+        --card-border-light: rgba(0, 0, 0, 0.125);
+        --btn-outline-light: #6c757d;
+        --btn-outline-hover-light: #f8f9fa;
+        --date-color-light: #0d6efd;
+    }
+
+    /* Dark mode colors */
+    :root {
+        --card-bg-dark: #2d3748;
+        --card-header-bg-dark: #1a202c;
+        --card-text-dark: #f7fafc;
+        --card-border-dark: #4a5568;
+        --btn-outline-dark: #f7fafc;
+        --btn-outline-hover-dark: #1a202c;
+        --date-color-dark: #63b3ed;
+    }
+
+    /* Apply light mode by default */
+    body {
+        --card-bg: var(--card-bg-light);
+        --card-header-bg: var(--card-header-bg-light);
+        --card-text: var(--card-text-light);
+        --card-border: var(--card-border-light);
+        --btn-outline: var(--btn-outline-light);
+        --btn-outline-hover: var(--btn-outline-hover-light);
+        --date-color: var(--date-color-light);
+    }
+
+    /* Apply dark mode if preferred */
+    @media (prefers-color-scheme: dark) {
+        body {
+            --card-bg: var(--card-bg-dark);
+            --card-header-bg: var(--card-header-bg-dark);
+            --card-text: var(--card-text-dark);
+            --card-border: var(--card-border-dark);
+            --btn-outline: var(--btn-outline-dark);
+            --btn-outline-hover: var(--btn-outline-hover-dark);
+            --date-color: var(--date-color-dark);
+        }
+    }
+
+    /* Apply the variables */
+    .food-card {
+        background-color: var(--card-bg);
+        border-color: var(--card-border);
+        color: var(--card-text);
+        margin-bottom: 30px;
+    }
+
+    .btn-outline-secondary {
+        color: var(--btn-outline);
+        border-color: var(--btn-outline);
+    }
+
+    .btn-outline-secondary:hover {
+        color: var(--btn-outline-hover);
+        background-color: var(--btn-outline);
+    }
+
+    .btn-primary {
+        background-color: var(--date-color);
+        border-color: var(--date-color);
+    }
+
+    /* Encouragement Notification Styles */
+    .encouragement-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        background: var(--card-bg);
+        border-left: 5px solid var(--date-color);
+        border-radius: 5px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        transform: translateX(0);
+        transition: all 0.3s ease;
+        max-width: 350px;
+    }
+
+    .encouragement-notification.fade-out {
+        transform: translateX(120%);
+    }
+
+    .encouragement-notification-content {
+        padding: 15px;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .encouragement-emoji {
+        font-size: 24px;
+        margin-right: 15px;
+    }
+
+    .encouragement-notification p {
+        margin: 0;
+        flex: 1;
+        color: var(--card-text);
+    }
+
+    .encouragement-notification-close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #999;
+        padding: 0 0 0 10px;
+        line-height: 1;
+    }
+
+    .encouragement-notification-close:hover {
+        color: personally var(--card-text);
+    }
+</style>
+{% endblock %}
+
+{% block script %}
+    {{ block.super }}
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Random encouragement messages
+        const encouragementMessages = [
+            "🍎 Add a new food! Help others track their meals too!",
+            "🥗 Your contribution makes our food database better!",
+            "🍗 Share a protein-packed item - you’re a hero!",
+            "🥕 Adding veggies? You’re growing our healthy options!",
+            "🥑 Every fat source you add helps someone plan!",
+            "🍞 Carb lovers will thank you - add something new!",
+            "🏋️‍♂️ Fuel the community with a post-workout food!",
+            "🥜 Snack ideas are gold - share one now!",
+            "🍽️ Your food item could inspire a meal plan!",
+            "🥚 Breakfast options are key - add one today!",
+            "🍌 Potassium power! Share a fruit with us!",
+            "🥤 Pair it with water info for bonus points!",
+            "🌟 You’re building a nutrition legacy - add away!",
+            "🍲 Homemade recipe? Add it to the database!",
+            "🥙 Fiber-rich foods are trending - contribute one!",
+            "🍓 Berry nice! Add an antioxidant-rich food!",
+            "🥥 Your addition could make someone’s day!",
+            "🍕 Even pizza deserves a spot - add it!",
+            "🥬 Leafy greens = community wins. Share one!",
+            "🏆 Every food you add is a win for us all!"
+        ];
+
+        // Show random message
+        const randomMessage = encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)];
+        
+        // Create a notification element
+        const notification = document.createElement('div');
+        notification.className = 'encouragement-notification';
+        notification.innerHTML = `
+            <div class="encouragement-notification-content">
+                <span class="encouragement-emoji">🍏</span>
+                <p>${randomMessage}</p>
+                <button class="encouragement-notification-close">×</button>
+            </div>
+        `;
+        
+        // Add to page after a short delay
+        setTimeout(() => {
+            document.body.appendChild(notification);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                notification.classList.add('fade-out');
+                setTimeout(() => notification.remove(), 500);
+            }, 5000);
+            
+            // Close button functionality
+            notification.querySelector('.encouragement-notification-close').addEventListener('click', () => {
+                notification.classList.add('fade-out');
+                setTimeout(() => notification.remove(), 500);
+            });
+        }, 1000);
+    });
+    </script>
 {% endblock %}

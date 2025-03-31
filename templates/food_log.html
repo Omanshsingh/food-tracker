@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-
 {% load static %}
 
 {% block title %}Food Tracker | Food Log{% endblock %}
@@ -231,6 +230,7 @@
         background-color: var(--card-bg);
         border-color: var(--card-border);
         color: var(--card-text);
+        margin-bottom: 30px; /* Consistent spacing */
     }
 
     #food-select-header, #food-log-header, #calorie-goal-header, #macro-header {
@@ -251,6 +251,10 @@
 
     #current-date, #calorieGoalDisplay {
         color: var(--date-color) !important;
+        background-color: rgba(var(--date-color), 0.1);
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
     }
 
     #editGoalBtn {
@@ -273,8 +277,59 @@
         color: var(--card-text);
         border-color: var(--card-border);
     }
-</style>
 
+    /* Nutrition Notification Styles */
+    .nutrition-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        background: var(--card-bg);
+        border-left: 5px solid var(--date-color);
+        border-radius: 5px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        transform: translateX(0);
+        transition: all 0.3s ease;
+        max-width: 350px;
+    }
+
+    .nutrition-notification.fade-out {
+        transform: translateX(120%);
+    }
+
+    .nutrition-notification-content {
+        padding: 15px;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .nutrition-emoji {
+        font-size: 24px;
+        margin-right: 15px;
+    }
+
+    .nutrition-notification p {
+        margin: 0;
+        flex: 1;
+        color: var(--card-text);
+    }
+
+    .nutrition-notification-close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #999;
+        padding: 0 0 0 10px;
+        line-height: 1;
+    }
+
+    .nutrition-notification-close:hover {
+        color: var(--card-text);
+    }
+</style>
 {% endblock %}
 
 {% block script %}
@@ -284,7 +339,62 @@
     document.addEventListener("DOMContentLoaded", function() {
         let pieChart = null;
         let calorieGoal = 2000;
+
+        // Random nutrition messages
+        const nutritionMessages = [
+            "🍎 Keep tracking! Every bite counts toward your goals.",
+            "🥗 Did you know? Balanced meals boost your energy all day.",
+            "🍗 Protein helps repair muscles - log some today!",
+            "🥕 Colorful veggies = more nutrients. Add variety!",
+            "🥑 Healthy fats keep your brain sharp. Include some!",
+            "🍞 Carbs are fuel - choose wisely and track them.",
+            "🏋️‍♂️ Post-workout meal? Log it to recover faster!",
+            "🥜 Small snacks add up - track them for accuracy.",
+            "🍽️ Mindful eating starts with tracking what you eat.",
+            "🥚 Breakfast sets the tone - did you log yours?",
+            "🍌 Potassium from fruits helps your muscles - track it!",
+            "🥤 Pair your food with water for better digestion.",
+            "🌟 You’re a nutrition pro - keep logging!",
+            "🍲 Home-cooked? Log it to see your masterpiece!",
+            "🥙 Fiber keeps you full - track those veggies!",
+            "🍓 Antioxidants fight stress - log some berries!",
+            "🥥 Healthy eating = happy body. Keep it up!",
+            "🍕 Even treats deserve a spot in your log!",
+            "🥬 Leafy greens = vitamin power. Track them!",
+            "🏆 Every logged meal is a step to success!"
+        ];
+
+        // Show random message
+        const randomMessage = nutritionMessages[Math.floor(Math.random() * nutritionMessages.length)];
         
+        // Create a notification element
+        const notification = document.createElement('div');
+        notification.className = 'nutrition-notification';
+        notification.innerHTML = `
+            <div class="nutrition-notification-content">
+                <span class="nutrition-emoji">🍎</span>
+                <p>${randomMessage}</p>
+                <button class="nutrition-notification-close">×</button>
+            </div>
+        `;
+        
+        // Add to page after a short delay
+        setTimeout(() => {
+            document.body.appendChild(notification);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                notification.classList.add('fade-out');
+                setTimeout(() => notification.remove(), 500);
+            }, 5000);
+            
+            // Close button functionality
+            notification.querySelector('.nutrition-notification-close').addEventListener('click', () => {
+                notification.classList.add('fade-out');
+                setTimeout(() => notification.remove(), 500);
+            });
+        }, 1000);
+
         // Initialize with current goal if set
         if (localStorage.getItem('calorieGoal')) {
             calorieGoal = parseInt(localStorage.getItem('calorieGoal'));
