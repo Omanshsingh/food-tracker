@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load custom_filters %}
+
 {% block title %}Water Tracker | Daily Intake{% endblock %}
 
 {% block body %}
@@ -156,7 +157,7 @@
                                 <div id="chartData" 
                                      data-labels="{{ chart_labels|join:',' }}"
                                      data-intake="{{ chart_intake|join:',' }}"
-                                     data-goal="{{ chart_goal }}"
+                                     data-goal="{{ water_goal.daily_goal }}"
                                      style="display: none;"></div>
                             </div>
                         </div>
