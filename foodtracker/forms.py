@@ -39,7 +39,7 @@ class FoodForm(forms.ModelForm):
             }),
             'description': forms.Textarea(attrs={
                 'class': 'form-control',
-                'placeholder': 'Describe the food and add your insights (nutrition, best time to eat, pairings, etc.)',  # Updated placeholder
+                'placeholder': 'Describe the food and add your insights (nutrition, best time to eat, pairings, etc.)',
                 'rows': 4
             })
         }
@@ -91,9 +91,26 @@ class WaterGoalForm(forms.ModelForm):
                 'min': 1,
                 'max': 20
             }),
+            'reminder_enabled': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+                'id': 'reminder-enabled'
+            }),
             'reminder_interval': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'min': 30,
-                'max': 240
+                'max': 240,
+                'step': 1,
+                'id': 'reminder-interval'
             })
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.instance.reminder_enabled:
+            self.fields['reminder_interval'].widget.attrs['disabled'] = True
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get('reminder_enabled') and not cleaned_data.get('reminder_interval'):
+            self.add_error('reminder_interval', 'Required when reminders are enabled')
+        return cleaned_data

@@ -1,17 +1,16 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load custom_filters %}
 
 {% block title %}Water Tracker | Daily Intake{% endblock %}
 
 {% block body %}
-<div class='py-4 mt-auto'>
+<div class='py-5 mt-auto'>
     <div class='container-fluid px-4'>
         <div class='row justify-content-center'>
             <div class='col-xl-12'>
                 <div class='row'>
                     <!-- Left Column - Water Tracking -->
-                    <div class='col-md-6 mt-4'>
+                    <div class='col-md-6 mt-5'>
                         <div class='card mb-3 shadow-lg water-card'>
                             <div class='card-header d-flex justify-content-between align-items-center water-card-header'>
                                 <h5 class='mb-0'>Today's Water Intake</h5>
@@ -40,7 +39,7 @@
                                     
                                     <p class="text-muted">
                                         {% if progress < 100 %}
-                                            {{ water_goal.daily_goal|subtract:water_intake.glasses }} more glasses to reach your goal!
+                                            {{ remaining }} more glasses to reach your goal!
                                         {% else %}
                                             You've met your daily goal! 🎉
                                         {% endif %}
@@ -143,7 +142,7 @@
                     </div>
                     
                     <!-- Right Column - Charts and Settings -->
-                    <div class='col-md-6 mt-4'>
+                    <div class='col-md-6 mt-5'>
                         <!-- Weekly Progress Chart -->
                         <div class='card mb-3 shadow-lg water-card'>
                             <div class='card-header water-card-header'>
@@ -157,7 +156,7 @@
                                 <div id="chartData" 
                                      data-labels="{{ chart_labels|join:',' }}"
                                      data-intake="{{ chart_intake|join:',' }}"
-                                     data-goal="{{ water_goal.daily_goal }}"
+                                     data-goal="{{ chart_goal }}"
                                      style="display: none;"></div>
                             </div>
                         </div>
@@ -193,7 +192,7 @@
                                                 <h6 class='mb-1'>Reminder</h6>
                                                 <p class='mb-0'>
                                                     {% if water_goal.reminder_enabled %}
-                                                        Enabled ({{ water_goal.reminder_interval }}h)
+                                                        Enabled ({{ water_goal.reminder_interval }} min)
                                                     {% else %}
                                                         Disabled
                                                     {% endif %}
@@ -275,6 +274,7 @@
         background-color: var(--card-bg);
         border-color: var(--card-border);
         color: var(--card-text);
+        margin-bottom: 30px; /* Consistent spacing */
     }
 
     .water-card-header {

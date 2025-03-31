@@ -22,7 +22,7 @@ from .forms import FoodForm, ImageForm, WaterIntakeForm, WaterGoalForm
 # ======================
 
 @login_required
-@never_cache  # Added to prevent caching
+@never_cache
 def water_tracker_view(request):
     """Main water tracking dashboard"""
     today = timezone.now().date()
@@ -34,8 +34,16 @@ def water_tracker_view(request):
         defaults={'glasses': 0}
     )
     
-    # Get water goal (created via signal)
-    water_goal = request.user.water_goal
+    # Get water goal - explicitly fetch fresh data
+    try:
+        water_goal = WaterGoal.objects.get(user=request.user)
+    except WaterGoal.DoesNotExist:
+        water_goal = WaterGoal.objects.create(
+            user=request.user,
+            daily_goal=8,
+            reminder_enabled=False,
+            reminder_interval=60
+        )
     
     # Calculate progress percentage
     progress = min(100, (water_intake.glasses / water_goal.daily_goal) * 100) if water_goal.daily_goal else 0
@@ -63,7 +71,10 @@ def water_tracker_view(request):
         'chart_intake': chart_intake,
         'chart_goal': chart_goal,
         'weekly_data_json': json.dumps(weekly_data, cls=DjangoJSONEncoder),
-        'water_history': WaterIntake.objects.filter(user=request.user).order_by('-date')[:5]
+        'water_history': WaterIntake.objects.filter(user=request.user).order_by('-date')[:5],
+        # Add reminder data for JavaScript
+        'reminder_enabled': water_goal.reminder_enabled,
+        'reminder_interval': water_goal.reminder_interval,
     }
     return render(request, 'water_tracker.html', context)
 
@@ -104,28 +115,25 @@ def water_settings_view(request):
         form = WaterGoalForm(request.POST, instance=water_goal)
         if form.is_valid():
             form.save()
-            # Debug print to confirm the save
-            print(f"WaterGoal updated for user {request.user.username}: "
-                  f"daily_goal={water_goal.daily_goal}, "
-                  f"reminder_enabled={water_goal.reminder_enabled}, "
-                  f"reminder_interval={water_goal.reminder_interval}")
+            # Refresh from database to ensure we have latest data
+            water_goal.refresh_from_db()
             messages.success(request, 'Water settings updated successfully!')
-            return redirect('water_tracker')  # Updated to redirect to water_tracker
+            return redirect('water_tracker')
     else:
         form = WaterGoalForm(instance=water_goal)
     
     context = {
         'categories': FoodCategory.objects.all(),
         'form': form,
-        'water_goal': water_goal,  # Added to provide current settings for the template
+        'water_goal': water_goal,
     }
     return render(request, 'water_settings.html', context)
 
 @login_required
 def water_history_view(request):
     """View historical water intake data"""
-    water_goal = request.user.water_goal  # Added to provide water_goal for the template
-    water_history = WaterIntake.objects.filter(user=request.user).order_by('-date')  # Renamed to water_history
+    water_goal = request.user.water_goal
+    water_history = WaterIntake.objects.filter(user=request.user).order_by('-date')
     
     # Date filtering
     date_from = request.GET.get('from')
@@ -149,9 +157,9 @@ def water_history_view(request):
     
     context = {
         'categories': FoodCategory.objects.all(),
-        'water_history': water_history_paginated,  # Updated to water_history
-        'water_goal': water_goal,  # Added for the template
-        'all_water_history': water_history,  # Added for chart data (non-paginated)
+        'water_history': water_history_paginated,
+        'water_goal': water_goal,
+        'all_water_history': water_history,
     }
     return render(request, 'water_history.html', context)
 
